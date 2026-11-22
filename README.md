@@ -45,11 +45,11 @@ The platform implements an audited, leak-free 7-stage optimization protocol eval
 
 ## Executive Summary & Core Results
 
-On a strictly held-out test cohort of 960 axial scans ($15\%$ stratified split), the frozen selected pipeline (`raw_rot5`) demonstrates the following verified quantitative performance:
+On a strictly held-out test cohort of 960 axial scans (15% stratified split), the frozen selected pipeline (`raw_rot5`) demonstrates the following verified quantitative performance:
 
 - **Peak Test Accuracy:** **97.50%** (936 out of 960 scans correctly classified; Seed 17).
-- **Mean Test Accuracy:** **96.56% $\pm$ 1.20%** across three independent random seeds (`17, 42, 2026`).
-- **Peak Macro-Averaged F1-Score:** **98.20%** (Mean: **96.58% $\pm$ 1.97%**), verifying that minority disease detection is maintained alongside majority-class accuracy.
+- **Mean Test Accuracy:** **96.56% ± 1.20%** across three independent random seeds (`17, 42, 2026`).
+- **Peak Macro-Averaged F1-Score:** **98.20%** (Mean: **96.58% ± 1.97%**), verifying that minority disease detection is maintained alongside majority-class accuracy.
 - **Moderate Dementia Sensitivity:** **100.0% Recall and 100.0% Precision** on peak runs (0 false negatives and 0 false alarms for severe dementia cases).
 - **Statistically Significant Improvement:** Verified via paired McNemar hypothesis testing with Edwards continuity correction against the baseline zero-augmentation control ($\chi^2 = 10.081$, $p = 0.001498$, Odds Ratio $= 2.44$).
 - **Uncertainty Calibration:** Mean prediction confidence is **97.58%** (median 99.81%) on correct diagnoses, dropping to **71.51%** (median 73.66%) on ambiguous scans.
@@ -125,7 +125,7 @@ Total Cohort (N = 6,400 Scans)
 
 ### Stratified Split Distribution & Loss Weights
 
-The dataset exhibits a severe 50:1 class imbalance between Non Demented controls ($50.0\%$) and Moderate Demented cases ($1.0\%$). To prevent minority-class suppression, loss weights are calculated exclusively from training counts.
+The dataset exhibits a severe 50:1 class imbalance between Non Demented controls (50.0%) and Moderate Demented cases (1.0%). To prevent minority-class suppression, loss weights are calculated exclusively from training counts.
 
 | Class Identifier | Clinical Diagnosis Stage | Total Scans | Cohort Share | Train Split (70%) | Validation Split (15%) | Test Split (15%) | Training Weight ($w_c$) |
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -161,23 +161,23 @@ Balanced accuracy represents the unweighted arithmetic mean of recall across all
 $$\text{Balanced Accuracy} = \frac{1}{K} \sum_{c=0}^{K-1} \text{Recall}_c = \frac{1}{K} \sum_{c=0}^{K-1} \frac{TP_c}{TP_c + FN_c}$$
 
 ### 4. Macro-Averaged F1-Score
-The primary model selection guardrail, treating each disease stage with equal importance ($25\%$):
+The primary model selection guardrail, treating each disease stage with equal importance (25%):
 
 $$\text{Macro-F1} = \frac{1}{K} \sum_{c=0}^{K-1} \text{F1}_c, \quad \text{where} \quad \text{F1}_c = 2 \times \frac{\text{Precision}_c \times \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}$$
 
 ### 5. Wilson Score Confidence Interval for Accuracy
-For $k$ correct classifications out of $n$ total test instances ($n = 960$), the two-sided $95\%$ confidence interval ($z = 1.96$) is computed as:
+For $k$ correct classifications out of $n$ total test instances ($n = 960$), the two-sided 95% confidence interval ($z = 1.96$) is computed as:
 
-$$CI_{95\%} = \frac{\hat{p} + \frac{z^2}{2n} \pm z \sqrt{\frac{\hat{p}(1 - \hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}, \quad \text{where} \quad \hat{p} = \frac{k}{n}$$
+$$\text{CI}_{0.95}(\hat{p}) = \frac{\hat{p} + \frac{z^2}{2n} \pm z \sqrt{\frac{\hat{p}(1 - \hat{p})}{n} + \frac{z^2}{4n^2}}}{1 + \frac{z^2}{n}}, \quad \text{where} \quad \hat{p} = \frac{k}{n}$$
 
 ### 6. Paired McNemar Test with Edwards Continuity Correction
 To compare whether model $A$ significantly outperforms model $B$ on the identical test images:
 
 $$\chi^2 = \frac{(|b - c| - 1)^2}{b + c}, \quad \text{with} \quad df = 1$$
 
-where $b$ is the count of scans where Model $A$ is correct and Model $B$ is wrong, and $c$ is the count where Model $B$ is correct and Model $A$ is wrong. The corresponding odds ratio is:
+where $b$ is the count of scans where Model $A$ is correct and Model $B$ is wrong, and $c$ is the count where Model $B$ is correct and Model $A$ is wrong. The corresponding odds ratio and its two-sided 95% confidence interval are:
 
-$$\text{OR} = \frac{b}{c}, \quad \text{with} \quad 95\% \text{ CI} = \exp\left(\ln(\text{OR}) \pm 1.96 \sqrt{\frac{1}{b} + \frac{1}{c}}\right)$$
+$$\text{OR} = \frac{b}{c}, \quad \text{CI}_{0.95}(\text{OR}) = \exp\left(\ln(\text{OR}) \pm 1.96 \sqrt{\frac{1}{b} + \frac{1}{c}}\right)$$
 
 ### 7. Layer-4 Grad-CAM Activation Formulation
 For class score $Y^c$ prior to softmax, the neuron importance weight $\alpha_k^c$ for feature map $A^k$ of spatial dimensions $U \times V$ in `layer4[-1]` is:
@@ -197,12 +197,12 @@ Every design decision was established through a seven-stage empirical progressio
 | Stage | Milestone Objective | Experimental Arms Tested | Key Findings & Quantitative Decision |
 | :---: | :--- | :--- | :--- |
 | **1** | **Data Audit & Path Repair** | File integrity check; manifest path validation; structural deduplication. | Verified 6,400 scans (0 corrupted). Repaired legacy hardcoded paths. Discovered **543 cross-split perceptual near-duplicate clusters** (leakage risk). |
-| **2** | **Baseline Reproducibility** | `raw_no_aug` vs. `raw_rot10_legacy` across seeds 17, 42, 2026. | `raw_no_aug` established **95.49% $\pm$ 0.75%** Val Acc. Legacy $\pm 10^\circ$ rotation exhibited $3\times$ higher variance ($\pm 2.26\%$) and missed Moderate scans. |
-| **3** | **Preprocessing Ablation** | Raw Grayscale, Global HE, CLAHE (clip 1.5, 2.0, 2.5; tile $8\times 8$). | Global HE severely degraded performance ($95.21\% \pm 1.57\%$) by amplifying scanner noise. **CLAHE 1.5 won** on raw data (**95.66% Acc, 96.41% F1**). |
+| **2** | **Baseline Reproducibility** | `raw_no_aug` vs. `raw_rot10_legacy` across seeds 17, 42, 2026. | `raw_no_aug` established **95.49% ± 0.75%** Val Acc. Legacy $\pm 10^\circ$ rotation exhibited $3\times$ higher variance (±2.26%) and missed Moderate scans. |
+| **3** | **Preprocessing Ablation** | Raw Grayscale, Global HE, CLAHE (clip 1.5, 2.0, 2.5; tile $8\times 8$). | Global HE severely degraded performance (95.21% ± 1.57%) by amplifying scanner noise. **CLAHE 1.5 won** on raw data (**95.66% Acc, 96.41% F1**). |
 | **4** | **Augmentation Ablation** | Rotation ($\pm 5^\circ, \pm 10^\circ$), Affine scaling/translation on Raw and CLAHE. | Discovered **Over-Augmentation Penalty**: large rotations and affine shear distorted ventricular symmetry. **Mild rotation ($\pm 5^\circ$) was the sweet spot** (**96.91% Acc, 97.66% F1**). |
-| **5** | **Imbalance Mitigation** | Unweighted Cross-Entropy, Inverse-Frequency Weights, Balanced Sampler. | Unweighted loss dropped Moderate recall to **80.0%** (severe clinical risk). **Class weights won**, guaranteeing **100% Moderate recall** with minimal variance ($\pm 0.52\%$). |
-| **6** | **Pipeline Optimization** | Leaderboard of top candidate configurations on Validation ($N=960$). | **`raw_rot5` won Rank 1** across Macro-F1 ($97.66\%$) and Accuracy ($96.91\%$), outperforming CLAHE by preserving natural cortical intensity gradients. Pipeline frozen. |
-| **7** | **Final Test Holdout Evaluation** | Evaluation of frozen `raw_rot5` vs. baselines on 960 holdout scans. | Achieved **97.50% peak accuracy** (936/960) and **96.56% $\pm$ 1.20% mean accuracy** with statistically significant gains ($p = 0.0015$). |
+| **5** | **Imbalance Mitigation** | Unweighted Cross-Entropy, Inverse-Frequency Weights, Balanced Sampler. | Unweighted loss dropped Moderate recall to **80.0%** (severe clinical risk). **Class weights won**, guaranteeing **100% Moderate recall** with minimal variance (±0.52%). |
+| **6** | **Pipeline Optimization** | Leaderboard of top candidate configurations on Validation ($N=960$). | **`raw_rot5` won Rank 1** across Macro-F1 (97.66%) and Accuracy (96.91%), outperforming CLAHE by preserving natural cortical intensity gradients. Pipeline frozen. |
+| **7** | **Final Test Holdout Evaluation** | Evaluation of frozen `raw_rot5` vs. baselines on 960 holdout scans. | Achieved **97.50% peak accuracy** (936/960) and **96.56% ± 1.20% mean accuracy** with statistically significant gains ($p = 0.0015$). |
 
 ---
 
@@ -232,7 +232,7 @@ The figure below illustrates the training and validation trajectory across the b
 ![Training Curves Comparison](results/comparison/training_curves_comparison.png)
 
 - **Rapid Initial Convergence:** Weighted cross-entropy drives training loss from $>1.10$ down to $<0.15$ within the first 3 epochs.
-- **Validation Stability:** Validation accuracy plateaus smoothly above $96\%$, with minimal divergence from training loss, verifying absence of severe overparameterization.
+- **Validation Stability:** Validation accuracy plateaus smoothly above 96%, with minimal divergence from training loss, verifying absence of severe overparameterization.
 
 ---
 
@@ -242,7 +242,7 @@ Brain MRI scans differ fundamentally from natural photographic images: anatomica
 
 ### 1. Contrast Preprocessing Analysis
 - **Raw Grayscale (Original):** Retains the raw dynamic range and native tissue contrast between cerebrospinal fluid (CSF), gray matter (GM), and white matter (WM).
-- **Global Histogram Equalization (HE):** Computes a global cumulative distribution function (CDF) across the entire image. Because background air occupies $>50\%$ of the field of view in axial brain MRI, global HE maps background noise into mid-gray levels, producing severe background artifacts and washed-out cortical margins.
+- **Global Histogram Equalization (HE):** Computes a global cumulative distribution function (CDF) across the entire image. Because background air occupies >50% of the field of view in axial brain MRI, global HE maps background noise into mid-gray levels, producing severe background artifacts and washed-out cortical margins.
 - **Contrast Limited Adaptive Histogram Equalization (CLAHE):** Divides the image into contextual tiles ($8 \times 8$) and applies contrast limiting (clip limits $1.5, 2.0, 2.5$) before bilinear interpolation. This prevents background noise amplification and sharpens sulcal boundaries.
 
 ### 2. Augmentation & The Over-Augmentation Penalty
@@ -315,13 +315,13 @@ BrainScope-XAI provides an interactive clinical decision-support interface featu
 
 The official validation leaderboard synthesized from all candidate combinations across seeds `17, 42, 2026`:
 
-| Rank | Model Pipeline | Preprocessing | Augmentation Policy | Val Macro-F1 (Mean $\pm$ Std) | Val Accuracy (Mean $\pm$ Std) | Status |
+| Rank | Model Pipeline | Preprocessing | Augmentation Policy | Val Macro-F1 (Mean ± Std) | Val Accuracy (Mean ± Std) | Status |
 | :---: | :--- | :--- | :--- | :---: | :---: | :---: |
-| **1** | **`raw_rot5`** | **Raw Grayscale** | **RandomRotation($\pm 5^\circ$)** | **97.66% $\pm$ 0.44%** | **96.91% $\pm$ 0.52%** | **Frozen Winner** |
-| 2 | `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 97.10% $\pm$ 0.61% | 96.42% $\pm$ 0.70% | Benchmark |
-| 3 | `raw_rot10` | Raw Grayscale | RandomRotation($\pm 10^\circ$) | 96.55% $\pm$ 1.85% | 96.15% $\pm$ 2.26% | High Variance |
-| 4 | `raw_no_aug` | Raw Grayscale | None (Baseline) | 95.89% $\pm$ 0.82% | 95.49% $\pm$ 0.75% | Control |
-| 5 | `he_rot5` | Global HE | RandomRotation($\pm 5^\circ$) | 95.12% $\pm$ 1.40% | 94.88% $\pm$ 1.25% | Degraded |
+| **1** | **`raw_rot5`** | **Raw Grayscale** | **RandomRotation($\pm 5^\circ$)** | **97.66% ± 0.44%** | **96.91% ± 0.52%** | **Frozen Winner** |
+| 2 | `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 97.10% ± 0.61% | 96.42% ± 0.70% | Benchmark |
+| 3 | `raw_rot10` | Raw Grayscale | RandomRotation($\pm 10^\circ$) | 96.55% ± 1.85% | 96.15% ± 2.26% | High Variance |
+| 4 | `raw_no_aug` | Raw Grayscale | None (Baseline) | 95.89% ± 0.82% | 95.49% ± 0.75% | Control |
+| 5 | `he_rot5` | Global HE | RandomRotation($\pm 5^\circ$) | 95.12% ± 1.40% | 94.88% ± 1.25% | Degraded |
 
 ![Stage 6 Validation Leaderboard Panel](results/experiments/stage6_validation_leaderboard_panel.png)
 
@@ -338,16 +338,16 @@ The frozen winning pipeline (`raw_rot5`) and predeclared baselines were evaluate
 | **Seed 17 (Peak)** | **936 / 960** | **97.50%** | **[96.31%, 98.31%]** | **98.20%** | **98.31%** | **100.0% (9/9)** | **100.0%** |
 | **Seed 42** | **931 / 960** | **96.98%** | **[95.70%, 97.89%]** | **97.15%** | **98.02%** | **100.0% (9/9)** | **100.0%** |
 | **Seed 2026** | **914 / 960** | **95.21%** | **[93.67%, 96.39%]** | **94.38%** | **93.66%** | **88.9% (8/9)** | **100.0%** |
-| **Mean $\pm$ Std** | **927.0 $\pm$ 11.5** | **96.56% $\pm$ 1.20%** | — | **96.58% $\pm$ 1.97%** | **96.66% $\pm$ 2.61%** | **96.30% $\pm$ 6.42%** | **100.0% $\pm$ 0.0%** |
+| **Mean ± Std** | **927.0 ± 11.5** | **96.56% ± 1.20%** | — | **96.58% ± 1.97%** | **96.66% ± 2.61%** | **96.30% ± 6.42%** | **100.0% ± 0.0%** |
 
 ### Benchmark Comparison Against Predeclared Baselines
 
-| Model Pipeline Code | Input Preprocessing | Online Augmentation Policy | Test Accuracy (Mean $\pm$ Std) | Test Macro-F1 (Mean $\pm$ Std) | Test Balanced Accuracy | Moderate Recall |
+| Model Pipeline Code | Input Preprocessing | Online Augmentation Policy | Test Accuracy (Mean ± Std) | Test Macro-F1 (Mean ± Std) | Test Balanced Accuracy | Moderate Recall |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **`raw_rot5`** *(Winner)* | **Original Grayscale** | **RandomRotation($\pm 5^\circ$)** | **96.56% $\pm$ 1.20%** | **96.58% $\pm$ 1.97%** | **96.66% $\pm$ 2.61%** | **96.30% $\pm$ 6.42%** |
-| `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 95.80% $\pm$ 0.90% | 96.34% $\pm$ 0.42% | 95.92% $\pm$ 0.63% | 96.30% $\pm$ 6.42% |
-| `raw_rot10` | Original Grayscale | RandomRotation($\pm 10^\circ$) [Legacy] | 96.11% $\pm$ 1.67% | 95.38% $\pm$ 2.49% | 95.04% $\pm$ 2.56% | 92.59% $\pm$ 6.42% |
-| `raw_no_aug` | Original Grayscale | None [Baseline Control] | 94.72% $\pm$ 0.42% | 93.97% $\pm$ 1.69% | 93.05% $\pm$ 3.55% | 88.89% $\pm$ 11.11% |
+| **`raw_rot5`** *(Winner)* | **Original Grayscale** | **RandomRotation($\pm 5^\circ$)** | **96.56% ± 1.20%** | **96.58% ± 1.97%** | **96.66% ± 2.61%** | **96.30% ± 6.42%** |
+| `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 95.80% ± 0.90% | 96.34% ± 0.42% | 95.92% ± 0.63% | 96.30% ± 6.42% |
+| `raw_rot10` | Original Grayscale | RandomRotation($\pm 10^\circ$) [Legacy] | 96.11% ± 1.67% | 95.38% ± 2.49% | 95.04% ± 2.56% | 92.59% ± 6.42% |
+| `raw_no_aug` | Original Grayscale | None [Baseline Control] | 94.72% ± 0.42% | 93.97% ± 1.69% | 93.05% ± 3.55% | 88.89% ± 11.11% |
 
 ![Comparative Model Metrics Bar](results/comparison/model_metrics_comparison_bar.png)
 
@@ -372,7 +372,7 @@ Actual Very Mild       0      0      8      328        336        97.6%
 ```
 
 - **Diagonal Accuracy:** 936 correct diagnoses on the primary diagonal; 24 total errors out of 960 scans.
-- **Borderline Error Clustering:** 19 of the 24 errors ($79.2\%$) occurred between Non Demented and Very Mild Demented, corresponding directly to the subtle clinical continuum between normal cognitive aging and early MCI.
+- **Borderline Error Clustering:** 19 of the 24 errors (79.2%) occurred between Non Demented and Very Mild Demented, corresponding directly to the subtle clinical continuum between normal cognitive aging and early MCI.
 - **Zero Critical False Negatives:** No Moderate Demented scan was misclassified as healthy (Non Demented), ensuring severe clinical safety.
 
 ![Comparative Confusion Matrices](results/comparison/all_confusion_matrices.png)
@@ -403,10 +403,10 @@ Evaluating softmax output probabilities reveals clean separation between correct
 
 | Prediction Outcome | Sample Count | Mean Confidence | Median Confidence | Standard Deviation | Diagnostic Implication |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| **Correct Diagnosis** | 936 scans | **97.58%** | **99.81%** | $\pm 7.42\%$ | Highly confident and decisive on typical anatomy. |
-| **Incorrect Diagnosis** | 24 scans | **71.51%** | **73.66%** | $\pm 14.83\%$ | Marked confidence drop on borderline/ambiguous scans. |
+| **Correct Diagnosis** | 936 scans | **97.58%** | **99.81%** | ±7.42% | Highly confident and decisive on typical anatomy. |
+| **Incorrect Diagnosis** | 24 scans | **71.51%** | **73.66%** | ±14.83% | Marked confidence drop on borderline/ambiguous scans. |
 
-**Clinical Utility:** A triage threshold set at $80\%$ confidence allows the system to autonomously verify $93.8\%$ of scans while flagging ambiguous borderline scans for radiologist review.
+**Clinical Utility:** A triage threshold set at 80% confidence allows the system to autonomously verify 93.8% of scans while flagging ambiguous borderline scans for radiologist review.
 
 ---
 
@@ -540,8 +540,8 @@ Open your browser to `http://127.0.0.1:8000` to interact with the multi-model co
 In compliance with the **RSNA/CAR Artificial Intelligence in Medical Imaging (CLAIM 2024)** checklist:
 
 1. **Pre-Consulted Holdout Status:** The 960 test scans originate from the public Kaggle Alzheimer's MRI dataset. Because earlier literature and preliminary exploratory work inspected these partitions, this cohort is formally reported as a **previously consulted internal holdout**, not a prospective external validation trial.
-2. **Slice-Leakage Risk:** As proven in our Stage 1 audit, 2D slicing of volumetric patient scans without explicit patient identifiers induces **543 cross-split perceptual duplicate groups** (*Yagis et al., Nature Sci Rep 2021*). While slice-level accuracy is $97.50\%$, image-level accuracy does not establish patient-level clinical efficacy without volumetric patient-level de-identification.
-3. **Statistical Resolution Limits:** With $N = 960$ test scans, a single classification decision changes accuracy by $\frac{1}{960} \approx 0.104\%$. Claims of $99.99\%$ accuracy are mathematically unresolvable on cohorts of this size and reflect split leakage.
+2. **Slice-Leakage Risk:** As proven in our Stage 1 audit, 2D slicing of volumetric patient scans without explicit patient identifiers induces **543 cross-split perceptual duplicate groups** (*Yagis et al., Nature Sci Rep 2021*). While slice-level accuracy is 97.50%, image-level accuracy does not establish patient-level clinical efficacy without volumetric patient-level de-identification.
+3. **Statistical Resolution Limits:** With $N = 960$ test scans, a single classification decision changes accuracy by $\frac{1}{960} \approx 0.00104$ (0.104%). Claims of 99.99% accuracy are mathematically unresolvable on cohorts of this size and reflect split leakage.
 4. **Intended Use:** BrainScope-XAI is an investigational academic research system designed for computer vision benchmarking and anatomical saliency research. It is **not** an FDA-cleared diagnostic medical device and must not be used as the sole basis for clinical diagnosis.
 
 ---
