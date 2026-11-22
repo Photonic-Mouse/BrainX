@@ -21,9 +21,12 @@ from src.data.dataset import BrainMRIDataset
 from src.models.resnet import create_model
 
 
-CSV_PATH = r"C:\HEHAW\BrainX\dataset\splits\splits.csv"
-MODEL_PATH = r"C:\HEHAW\BrainX\checkpoints\resnet18_baseline.pth"
-OUTPUT_PATH = r"C:\HEHAW\BrainX\results\baseline"
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CSV_PATH = str(REPO_ROOT / "Dataset" / "splits" / "splits.csv")
+MODEL_PATH = str(REPO_ROOT / "checkpoints" / "resnet18_baseline.pth")
+OUTPUT_PATH = str(REPO_ROOT / "results" / "baseline")
 
 os.makedirs(OUTPUT_PATH, exist_ok=True)
 

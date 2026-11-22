@@ -1,0 +1,188 @@
+{
+  "seed_17": {
+    "winner_vs_raw_no_aug": {
+      "contingency_table": {
+        "both_correct": 892,
+        "model_a_correct_model_b_wrong": 44,
+        "model_b_correct_model_a_wrong": 18,
+        "both_wrong": 6
+      },
+      "mcnemar_chi2_statistic": 10.080645161290322,
+      "p_value": 0.001498348617996581,
+      "odds_ratio": 2.4444444444444446,
+      "odds_ratio_95_ci": [
+        1.4125945648651659,
+        4.230023809093206
+      ],
+      "risk_difference_accuracy_gain": 0.027083333333333334,
+      "risk_difference_95_ci": [
+        0.011098786985911699,
+        0.04306787968075497
+      ]
+    },
+    "winner_vs_raw_rot10_legacy": {
+      "contingency_table": {
+        "both_correct": 918,
+        "model_a_correct_model_b_wrong": 18,
+        "model_b_correct_model_a_wrong": 21,
+        "both_wrong": 3
+      },
+      "mcnemar_chi2_statistic": 0.10256410256410256,
+      "p_value": 0.7487740417065472,
+      "odds_ratio": 0.8571428571428571,
+      "odds_ratio_95_ci": [
+        0.4567046245735955,
+        1.6086849968663461
+      ],
+      "risk_difference_accuracy_gain": -0.003125,
+      "risk_difference_95_ci": [
+        -0.015873671678151086,
+        0.009623671678151088
+      ]
+    },
+    "winner_vs_clahe15_rot5": {
+      "contingency_table": {
+        "both_correct": 898,
+        "model_a_correct_model_b_wrong": 38,
+        "model_b_correct_model_a_wrong": 20,
+        "both_wrong": 4
+      },
+      "mcnemar_chi2_statistic": 4.982758620689655,
+      "p_value": 0.025601129177555748,
+      "odds_ratio": 1.9,
+      "odds_ratio_95_ci": [
+        1.1056105980196265,
+        3.265164069941301
+      ],
+      "risk_difference_accuracy_gain": 0.01875,
+      "risk_difference_95_ci": [
+        0.003246435081775188,
+        0.03425356491822481
+      ]
+    }
+  },
+  "seed_42": {
+    "winner_vs_raw_no_aug": {
+      "contingency_table": {
+        "both_correct": 893,
+        "model_a_correct_model_b_wrong": 38,
+        "model_b_correct_model_a_wrong": 20,
+        "both_wrong": 9
+      },
+      "mcnemar_chi2_statistic": 4.982758620689655,
+      "p_value": 0.025601129177555748,
+      "odds_ratio": 1.9,
+      "odds_ratio_95_ci": [
+        1.1056105980196265,
+        3.265164069941301
+      ],
+      "risk_difference_accuracy_gain": 0.01875,
+      "risk_difference_95_ci": [
+        0.003246435081775188,
+        0.03425356491822481
+      ]
+    },
+    "winner_vs_raw_rot10_legacy": {
+      "contingency_table": {
+        "both_correct": 888,
+        "model_a_correct_model_b_wrong": 43,
+        "model_b_correct_model_a_wrong": 19,
+        "both_wrong": 10
+      },
+      "mcnemar_chi2_statistic": 8.53225806451613,
+      "p_value": 0.003489065561942506,
+      "odds_ratio": 2.263157894736842,
+      "odds_ratio_95_ci": [
+        1.318938007930088,
+        3.883339190859974
+      ],
+      "risk_difference_accuracy_gain": 0.025,
+      "risk_difference_95_ci": [
+        0.009001877280269553,
+        0.040998122719730454
+      ]
+    },
+    "winner_vs_clahe15_rot5": {
+      "contingency_table": {
+        "both_correct": 895,
+        "model_a_correct_model_b_wrong": 36,
+        "model_b_correct_model_a_wrong": 17,
+        "both_wrong": 12
+      },
+      "mcnemar_chi2_statistic": 6.113207547169812,
+      "p_value": 0.013417541070915195,
+      "odds_ratio": 2.1176470588235294,
+      "odds_ratio_95_ci": [
+        1.1894783309306818,
+        3.7700805043125087
+      ],
+      "risk_difference_accuracy_gain": 0.019791666666666666,
+      "risk_difference_95_ci": [
+        0.004980932245500081,
+        0.03460240108783325
+      ]
+    }
+  },
+  "seed_2026": {
+    "winner_vs_raw_no_aug": {
+      "contingency_table": {
+        "both_correct": 872,
+        "model_a_correct_model_b_wrong": 42,
+        "model_b_correct_model_a_wrong": 33,
+        "both_wrong": 13
+      },
+      "mcnemar_chi2_statistic": 0.8533333333333334,
+      "p_value": 0.3556110610952391,
+      "odds_ratio": 1.2727272727272727,
+      "odds_ratio_95_ci": [
+        0.8067227660090097,
+        2.007919918706882
+      ],
+      "risk_difference_accuracy_gain": 0.009375,
+      "risk_difference_95_ci": [
+        -0.008296403434616005,
+        0.027046403434616006
+      ]
+    },
+    "winner_vs_raw_rot10_legacy": {
+      "contingency_table": {
+        "both_correct": 889,
+        "model_a_correct_model_b_wrong": 25,
+        "model_b_correct_model_a_wrong": 33,
+        "both_wrong": 13
+      },
+      "mcnemar_chi2_statistic": 0.8448275862068966,
+      "p_value": 0.3580197188228158,
+      "odds_ratio": 0.7575757575757576,
+      "odds_ratio_95_ci": [
+        0.4505346810754556,
+        1.2738664803706035
+      ],
+      "risk_difference_accuracy_gain": -0.008333333333333333,
+      "risk_difference_95_ci": [
+        -0.02387326472290493,
+        0.007206598056238262
+      ]
+    },
+    "winner_vs_clahe15_rot5": {
+      "contingency_table": {
+        "both_correct": 894,
+        "model_a_correct_model_b_wrong": 20,
+        "model_b_correct_model_a_wrong": 35,
+        "both_wrong": 11
+      },
+      "mcnemar_chi2_statistic": 3.5636363636363635,
+      "p_value": 0.059058229090536485,
+      "odds_ratio": 0.5714285714285714,
+      "odds_ratio_95_ci": [
+        0.3298835847303654,
+        0.9898358916882508
+      ],
+      "risk_difference_accuracy_gain": -0.015625,
+      "risk_difference_95_ci": [
+        -0.03073410928469101,
+        -0.0005158907153089906
+      ]
+    }
+  }
+}

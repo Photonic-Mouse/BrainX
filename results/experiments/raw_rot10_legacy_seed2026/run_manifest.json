@@ -1,0 +1,69 @@
+{
+  "run_id": "raw_rot10_legacy_seed2026",
+  "condition_name": "raw_rot10_legacy",
+  "seed": 2026,
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "git_commit": "104e3f67f020c76bfd15bf1ac44c656fe78d474e",
+  "splits_manifest_sha256": "d11d3a62e955e4631bffd409285f6ce966059c39ecaf1f1f4bbd6d4ed0b133ab",
+  "split_counts": {
+    "train": 4480,
+    "validation": 960
+  },
+  "model": "ResNet18",
+  "weights": "ResNet18_Weights.DEFAULT (ImageNet)",
+  "preprocessing": "original",
+  "augmentation": "RandomRotation(10)",
+  "optimizer": "Adam",
+  "learning_rate": 0.0001,
+  "batch_size": 16,
+  "class_weights": [
+    1.7862838915470494,
+    24.88888888888889,
+    0.5,
+    0.7142857142857143
+  ],
+  "software_versions": {
+    "python": "3.10.11",
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0"
+  },
+  "best_epoch": 7,
+  "best_val_macro_f1": 0.9603372584034493,
+  "best_val_accuracy": 0.9645833333333333,
+  "best_val_balanced_accuracy": 0.9724480277185501,
+  "best_val_weighted_f1": 0.9645445193367109,
+  "best_per_class_recall": {
+    "Mild_Demented": 0.9701492537313433,
+    "Moderate_Demented": 1.0,
+    "Non_Demented": 0.9791666666666666,
+    "Very_Mild_Demented": 0.9404761904761905
+  },
+  "best_confusion_matrix": [
+    [
+      130,
+      1,
+      2,
+      1
+    ],
+    [
+      0,
+      10,
+      0,
+      0
+    ],
+    [
+      5,
+      0,
+      470,
+      5
+    ],
+    [
+      2,
+      0,
+      18,
+      316
+    ]
+  ],
+  "best_checkpoint_path": "results\\experiments\\raw_rot10_legacy_seed2026\\checkpoints\\best_model.pth"
+}

@@ -6,8 +6,11 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-DATASET_PATH = r"C:\HEHAW\BrainX\Dataset"
-OUTPUT_PATH = r"C:\HEHAW\BrainX\results\preprocessing"
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATASET_PATH = str(REPO_ROOT / "Dataset")
+OUTPUT_PATH = str(REPO_ROOT / "results" / "preprocessing")
 
 classes = [
     "Mild_Demented",

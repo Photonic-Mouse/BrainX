@@ -7,7 +7,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from PIL import Image
 
-DATASET_PATH = r"C:\HEHAW\BrainX\Dataset"
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATASET_PATH = str(REPO_ROOT / "Dataset")
 
 classes = [
     "Mild_Demented",
@@ -69,7 +72,7 @@ for row, class_name in enumerate(classes):
 
 plt.tight_layout()
 
-output_path = r"C:\HEHAW\BrainX\sample_images.png"
+output_path = str(REPO_ROOT / "sample_images.png")
 
 plt.savefig(output_path, dpi=150, bbox_inches="tight")
 plt.close()

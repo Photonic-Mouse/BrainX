@@ -20,12 +20,12 @@ from src.models.resnet import create_model
 # ==============================
 # CONFIGURATION
 # ==============================
+from pathlib import Path
 
-CSV_PATH = r"C:\HEHAW\BrainX\dataset\splits\splits.csv"
-
-SAVE_PATH = r"C:\HEHAW\BrainX\checkpoints"
-
-RESULT_PATH = r"C:\HEHAW\BrainX\results\clahe"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CSV_PATH = str(REPO_ROOT / "Dataset" / "splits" / "splits.csv")
+SAVE_PATH = str(REPO_ROOT / "checkpoints")
+RESULT_PATH = str(REPO_ROOT / "results" / "clahe")
 
 PREPROCESSING = "CLAHE"
 

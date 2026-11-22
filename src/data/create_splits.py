@@ -6,10 +6,11 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 
 # Dataset location
-DATASET_PATH = Path(r"C:\HEHAW\BrainX\Dataset")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATASET_PATH = REPO_ROOT / "Dataset"
 
 # Output location
-OUTPUT_PATH = Path(r"C:\HEHAW\BrainX\dataset\splits")
+OUTPUT_PATH = DATASET_PATH / "splits"
 OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
 
 # Class labels

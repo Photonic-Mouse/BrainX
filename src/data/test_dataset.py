@@ -1,10 +1,13 @@
 
+import os
 import torch
+from pathlib import Path
 
 from torch.utils.data import DataLoader
-from dataset import BrainMRIDataset
+from src.data.dataset import BrainMRIDataset
 
-CSV_PATH = r"C:\HEHAW\BrainX\dataset\splits\splits.csv"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CSV_PATH = REPO_ROOT / "Dataset" / "splits" / "splits.csv"
 
 train_dataset = BrainMRIDataset(
     CSV_PATH,

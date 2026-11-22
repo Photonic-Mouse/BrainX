@@ -1,4 +1,5 @@
 
+import os
 import cv2
 import torch
 import pandas as pd
@@ -18,6 +19,7 @@ class BrainMRIDataset(Dataset):
         preprocessing="original"
     ):
 
+        self.csv_path = csv_path
         self.data = pd.read_csv(csv_path)
 
         self.data = self.data[
@@ -59,6 +61,15 @@ class BrainMRIDataset(Dataset):
 
         image_path = row["image_path"]
         label = int(row["label"])
+
+        # Resolve relative image path dynamically if not absolute
+        if not os.path.isabs(image_path):
+            base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(self.csv_path))))
+            candidate = os.path.join(base_dir, image_path)
+            if os.path.exists(candidate):
+                image_path = candidate
+            elif os.path.exists(os.path.join(os.getcwd(), image_path)):
+                image_path = os.path.join(os.getcwd(), image_path)
 
         # Load grayscale MRI
         image = cv2.imread(

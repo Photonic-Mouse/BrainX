@@ -1,0 +1,67 @@
+{
+  "run_id": "imb_balanced_sampler_seed42",
+  "strategy_name": "imb_balanced_sampler",
+  "seed": 42,
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "splits_manifest_sha256": "d11d3a62e955e4631bffd409285f6ce966059c39ecaf1f1f4bbd6d4ed0b133ab",
+  "model": "ResNet18",
+  "weights": "ResNet18_Weights.DEFAULT (ImageNet)",
+  "preprocessing": "CLAHE_1.5",
+  "augmentation": "RandomRotation(5)",
+  "imbalance_handling": "imb_balanced_sampler",
+  "class_weights": "none (unweighted, balanced sampler active)",
+  "optimizer": "Adam",
+  "learning_rate": 0.0001,
+  "batch_size": 16,
+  "best_epoch": 7,
+  "best_val_macro_f1": 0.963799340606152,
+  "best_val_accuracy": 0.953125,
+  "best_val_balanced_accuracy": 0.9651563610518834,
+  "best_val_weighted_f1": 0.9530182603589473,
+  "best_per_class_recall": {
+    "Mild_Demented": 0.9701492537313433,
+    "Moderate_Demented": 1.0,
+    "Non_Demented": 0.9708333333333333,
+    "Very_Mild_Demented": 0.9196428571428571
+  },
+  "best_per_class_precision": {
+    "Mild_Demented": 0.935251798561151,
+    "Moderate_Demented": 1.0,
+    "Non_Demented": 0.9452332657200812,
+    "Very_Mild_Demented": 0.9716981132075472
+  },
+  "best_per_class_f1": {
+    "Mild_Demented": 0.9523809523809523,
+    "Moderate_Demented": 1.0,
+    "Non_Demented": 0.9578622816032888,
+    "Very_Mild_Demented": 0.944954128440367
+  },
+  "best_confusion_matrix": [
+    [
+      130,
+      0,
+      3,
+      1
+    ],
+    [
+      0,
+      10,
+      0,
+      0
+    ],
+    [
+      6,
+      0,
+      466,
+      8
+    ],
+    [
+      3,
+      0,
+      24,
+      309
+    ]
+  ],
+  "best_checkpoint_path": "results\\experiments\\imb_balanced_sampler_seed42\\checkpoints\\best_model.pth"
+}

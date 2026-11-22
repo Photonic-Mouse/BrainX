@@ -19,6 +19,9 @@ results/app_runs/*
 # Checkpoint backups
 checkpoints/backup/
 
+# Experiment binary checkpoints (keep locally; track reports, CSVs, JSONs in git)
+results/experiments/**/checkpoints/
+
 # IDE & OS
 .vscode/
 .idea/

@@ -1,0 +1,10 @@
+{
+  "manifest_path": "C:\\SHARAN PROJECTS\\BRAINSCOPE-XAI\\Dataset\\splits\\splits.csv",
+  "total_rows": 6400,
+  "stable_hash_before": "85a5d0b86ac2669f55f1c443d6e345782da2bc7af087f335334f6768eb841825",
+  "stable_hash_after": "85a5d0b86ac2669f55f1c443d6e345782da2bc7af087f335334f6768eb841825",
+  "hashes_match": true,
+  "sample_before": "Dataset/Very_Mild_Demented/verymild_1231.jpg",
+  "sample_after": "Dataset/Very_Mild_Demented/verymild_1231.jpg",
+  "all_files_exist_on_disk": true
+}

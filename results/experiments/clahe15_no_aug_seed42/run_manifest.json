@@ -1,0 +1,60 @@
+{
+  "run_id": "prep_clahe_1_5_seed42",
+  "condition_name": "prep_clahe_1_5",
+  "prep_type": "CLAHE_1.5",
+  "seed": 42,
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "splits_manifest_sha256": "d11d3a62e955e4631bffd409285f6ce966059c39ecaf1f1f4bbd6d4ed0b133ab",
+  "model": "ResNet18",
+  "weights": "ResNet18_Weights.DEFAULT (ImageNet)",
+  "preprocessing": "CLAHE_1.5",
+  "augmentation": "none",
+  "optimizer": "Adam",
+  "learning_rate": 0.0001,
+  "batch_size": 16,
+  "class_weights": [
+    1.7862838915470494,
+    24.88888888888889,
+    0.5,
+    0.7142857142857143
+  ],
+  "best_epoch": 8,
+  "best_val_macro_f1": 0.9706564186252289,
+  "best_val_accuracy": 0.9625,
+  "best_val_balanced_accuracy": 0.9669143123667377,
+  "best_val_weighted_f1": 0.9626094190699985,
+  "best_per_class_recall": {
+    "Mild_Demented": 0.9328358208955224,
+    "Moderate_Demented": 1.0,
+    "Non_Demented": 0.9645833333333333,
+    "Very_Mild_Demented": 0.9702380952380952
+  },
+  "best_confusion_matrix": [
+    [
+      125,
+      0,
+      1,
+      8
+    ],
+    [
+      0,
+      10,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      463,
+      16
+    ],
+    [
+      0,
+      0,
+      10,
+      326
+    ]
+  ],
+  "best_checkpoint_path": "results\\experiments\\prep_clahe_1_5_seed42\\checkpoints\\best_model.pth"
+}

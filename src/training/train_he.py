@@ -18,8 +18,11 @@ from src.models.resnet import create_model
 
 
 # Configuration
-CSV_PATH = r"C:\HEHAW\BrainX\dataset\splits\splits.csv"
-SAVE_PATH = r"C:\HEHAW\BrainX\checkpoints"
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+CSV_PATH = str(REPO_ROOT / "Dataset" / "splits" / "splits.csv")
+SAVE_PATH = str(REPO_ROOT / "checkpoints")
 
 BATCH_SIZE = 16
 EPOCHS = 8

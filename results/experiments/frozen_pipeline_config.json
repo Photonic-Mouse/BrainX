@@ -1,0 +1,35 @@
+{
+  "stage": 6,
+  "selected_candidate_code": "raw_rot5",
+  "selected_candidate_description": "Raw Grayscale + Rot(\u00b15\u00b0) [Best Augmentation]",
+  "model_architecture": "ResNet-18 (ImageNet Initialized)",
+  "input_resolution": [
+    224,
+    224
+  ],
+  "input_channels": 3,
+  "preprocessing": "Original Grayscale resize + ImageNet standard normalization",
+  "augmentation_policy": "RandomRotation(degrees=5) [Training-Only, online]",
+  "imbalance_handling": "Inverse-frequency class-weighted Cross-Entropy (from training counts only)",
+  "class_weights": [
+    1.7862838915470494,
+    24.88888888888889,
+    0.5,
+    0.7142857142857143
+  ],
+  "optimizer": "Adam",
+  "learning_rate": 0.0001,
+  "batch_size": 16,
+  "validation_macro_f1_mean": 0.976616622466855,
+  "validation_macro_f1_std": 0.008729242130412289,
+  "validation_accuracy_mean": 0.9690972222222222,
+  "validation_accuracy_std": 0.011138204814128786,
+  "validation_moderate_recall": 1.0,
+  "frozen_checkpoint_seeds": {
+    "seed17": "results/experiments/raw_rot5_seed17/checkpoints/best_model.pth",
+    "seed42": "results/experiments/raw_rot5_seed42/checkpoints/best_model.pth",
+    "seed2026": "results/experiments/raw_rot5_seed2026/checkpoints/best_model.pth"
+  },
+  "blinded_test_data_used": false,
+  "status": "FROZEN_READY_FOR_STAGE7_EVALUATION"
+}
