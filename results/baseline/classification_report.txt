@@ -1,0 +1,21 @@
+Test Accuracy: 0.9437
+Test Macro F1: 0.9530
+
+Classification Report:
+              precision    recall  f1-score   support
+
+        Mild       0.93      0.93      0.93       135
+    Moderate       1.00      1.00      1.00         9
+Non Demented       0.95      0.97      0.96       480
+   Very Mild       0.94      0.92      0.93       336
+
+    accuracy                           0.94       960
+   macro avg       0.95      0.95      0.95       960
+weighted avg       0.94      0.94      0.94       960
+
+
+Confusion Matrix:
+[[125   0   4   6]
+ [  0   9   0   0]
+ [  1   0 464  15]
+ [  9   0  19 308]]

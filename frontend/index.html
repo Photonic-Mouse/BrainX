@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainX — Multi-Model Brain MRI Analysis & Explainability Platform</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="brain" class="icon-brand"></i>
+        </div>
+        <div class="brand-text">
+          <h1>BrainX <span class="badge-research">Research v2.0</span></h1>
+          <p>Multi-Model MRI Classification & Grad-CAM Explainability</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="tab-analysis">
+          <i data-lucide="activity"></i> New Analysis
+        </button>
+        <button class="nav-btn" data-tab="tab-metrics">
+          <i data-lucide="bar-chart-2"></i> Research Metrics
+        </button>
+        <button class="nav-btn" data-tab="tab-overview">
+          <i data-lucide="file-text"></i> Overview
+        </button>
+        <button class="nav-btn" data-tab="tab-history">
+          <i data-lucide="history"></i> History
+        </button>
+      </nav>
+
+      <!-- System Status -->
+      <div class="system-status">
+        <span class="status-indicator"></span>
+        <span id="system-device-label">CUDA Active</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Safety Banner -->
+    <div class="safety-banner">
+      <div class="safety-content">
+        <i data-lucide="shield-alert" class="icon-warning"></i>
+        <div>
+          <strong>Academic Research Prototype:</strong> This software is designed for computational neuroscience and comparative algorithm evaluation. Outputs represent experimental feature activations and do <strong>not</strong> constitute a clinical diagnosis.
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: NEW ANALYSIS (PRIMARY) -->
+    <section id="tab-analysis" class="tab-pane active">
+      
+      <!-- Upload & Configuration Grid -->
+      <div class="upload-grid">
+        <div class="card upload-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="upload-cloud"></i>
+              <h3>Input Brain MRI Scan</h3>
+            </div>
+            <span class="tag">Axial T1/T2 2D</span>
+          </div>
+
+          <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".jpg,.jpeg,.png" style="display: none;">
+            <div class="drop-zone-idle" id="drop-zone-idle">
+              <div class="upload-icon-circle">
+                <i data-lucide="image-plus"></i>
+              </div>
+              <h4>Drag & drop MRI scan here</h4>
+              <p>Supports PNG, JPG, JPEG (Grayscale or RGB)</p>
+              <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()">
+                <i data-lucide="folder-open"></i> Browse Files
+              </button>
+            </div>
+
+            <!-- Preview State -->
+            <div class="drop-zone-preview" id="drop-zone-preview" style="display: none;">
+              <img id="preview-image" src="" alt="MRI Preview">
+              <div class="preview-meta">
+                <span id="preview-filename">filename.jpg</span>
+                <span id="preview-dimensions">224 x 224 px</span>
+                <button class="btn btn-sm btn-ghost" id="btn-clear-file">
+                  <i data-lucide="trash-2"></i> Remove
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sample MRI Quick Selector -->
+          <div class="sample-selector">
+            <div class="sample-header">
+              <i data-lucide="sparkles"></i>
+              <span>Or test with a representative sample from test cohort:</span>
+            </div>
+            <div class="sample-chips" id="sample-chips-container">
+              <!-- Dynamically populated -->
+              <span class="chip-loading">Loading sample cohort...</span>
+            </div>
+          </div>
+
+          <div class="action-bar">
+            <button class="btn btn-primary btn-lg" id="btn-analyze" disabled>
+              <i data-lucide="cpu"></i> Analyze with 3 Models
+            </button>
+          </div>
+        </div>
+
+        <!-- How It Works Summary Card -->
+        <div class="card info-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="git-fork"></i>
+              <h3>3-Way Preprocessing Engine</h3>
+            </div>
+          </div>
+          <div class="info-body">
+            <div class="pipeline-step">
+              <div class="step-num">1</div>
+              <div class="step-desc">
+                <strong>Baseline ResNet18:</strong> Evaluates unenhanced raw MRI to test feature preservation without contrast distortion.
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">2</div>
+              <div class="step-desc">
+                <strong>Histogram Equalization (HE):</strong> Stretches global dynamic range; tests sensitivity to background noise amplification.
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">3</div>
+              <div class="step-desc">
+                <strong>CLAHE ResNet18:</strong> Applies localized tile-clipped contrast equalization (clipLimit=2.0) to sharpen subtle tissue boundaries.
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-num">4</div>
+              <div class="step-desc">
+                <strong>Layer-4 Grad-CAM:</strong> Extracts neural attribution gradients to visualize anatomical regions guiding classification.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div class="loading-container" id="loading-container" style="display: none;">
+        <div class="loading-spinner"></div>
+        <h3 id="loading-stage-text">Processing Brain MRI through all 3 models...</h3>
+        <p>Executing ResNet18 inference & generating Layer-4 Grad-CAM attribution maps...</p>
+      </div>
+
+      <!-- RESULTS SECTION -->
+      <div id="results-wrapper" style="display: none;">
+        
+        <!-- Agreement Banner -->
+        <div class="agreement-banner" id="agreement-banner">
+          <div class="agreement-header">
+            <div class="agreement-title">
+              <i data-lucide="check-circle" id="agreement-icon"></i>
+              <h3 id="agreement-status-title">Full Consensus</h3>
+            </div>
+            <button class="btn btn-primary" id="btn-download-pdf">
+              <i data-lucide="download"></i> Download PDF Report
+            </button>
+          </div>
+          <p id="agreement-summary-text" class="agreement-text"></p>
+        </div>
+
+        <!-- Three Model Cards Side-by-Side -->
+        <div class="models-grid">
+          
+          <!-- Baseline Card -->
+          <div class="model-card" id="card-baseline">
+            <div class="model-card-header">
+              <div class="model-badge badge-baseline">Baseline</div>
+              <h4>Original MRI</h4>
+            </div>
+            <div class="prediction-box">
+              <div class="prediction-label">Predicted Class</div>
+              <div class="prediction-class" id="pred-class-baseline">—</div>
+              <div class="confidence-pill" id="conf-pill-baseline">Confidence: 0%</div>
+            </div>
+            <div class="prob-breakdown">
+              <div class="prob-title">Class Probabilities</div>
+              <div id="prob-bars-baseline"></div>
+            </div>
+            <div class="benchmark-footer">
+              <span>Test Acc: <strong>94.38%</strong></span>
+              <span>Macro F1: <strong>95.30%</strong></span>
+            </div>
+          </div>
+
+          <!-- HE Card -->
+          <div class="model-card" id="card-he">
+            <div class="model-card-header">
+              <div class="model-badge badge-he">Histogram Eq</div>
+              <h4>Global HE</h4>
+            </div>
+            <div class="prediction-box">
+              <div class="prediction-label">Predicted Class</div>
+              <div class="prediction-class" id="pred-class-he">—</div>
+              <div class="confidence-pill" id="conf-pill-he">Confidence: 0%</div>
+            </div>
+            <div class="prob-breakdown">
+              <div class="prob-title">Class Probabilities</div>
+              <div id="prob-bars-he"></div>
+            </div>
+            <div class="benchmark-footer">
+              <span>Test Acc: <strong>78.23%</strong></span>
+              <span>Macro F1: <strong>79.76%</strong></span>
+            </div>
+          </div>
+
+          <!-- CLAHE Card -->
+          <div class="model-card" id="card-clahe">
+            <div class="model-card-header">
+              <div class="model-badge badge-clahe">CLAHE (Top)</div>
+              <h4>Adaptive Contrast</h4>
+            </div>
+            <div class="prediction-box">
+              <div class="prediction-label">Predicted Class</div>
+              <div class="prediction-class" id="pred-class-clahe">—</div>
+              <div class="confidence-pill" id="conf-pill-clahe">Confidence: 0%</div>
+            </div>
+            <div class="prob-breakdown">
+              <div class="prob-title">Class Probabilities</div>
+              <div id="prob-bars-clahe"></div>
+            </div>
+            <div class="benchmark-footer">
+              <span>Test Acc: <strong>95.10%</strong></span>
+              <span>Macro F1: <strong>94.61%</strong></span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Probability Distribution Chart -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="bar-chart"></i>
+              <h3>Cross-Model Probability Distribution Comparison</h3>
+            </div>
+            <span class="tag">Softmax Scores</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="probability-chart" height="90"></canvas>
+          </div>
+        </div>
+
+        <!-- Preprocessing Visual Comparison -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="sliders"></i>
+              <h3>Input Preprocessing Comparison</h3>
+            </div>
+            <span class="tag">Same Uploaded MRI</span>
+          </div>
+          <div class="prep-grid">
+            <div class="prep-item">
+              <img id="prep-img-orig" src="" alt="Original MRI">
+              <div class="prep-caption">
+                <strong>Original MRI</strong>
+                <span>Natural tissue contrast</span>
+              </div>
+            </div>
+            <div class="prep-item">
+              <img id="prep-img-he" src="" alt="HE MRI">
+              <div class="prep-caption">
+                <strong>Histogram Equalization</strong>
+                <span>Global intensity flattening</span>
+              </div>
+            </div>
+            <div class="prep-item">
+              <img id="prep-img-clahe" src="" alt="CLAHE MRI">
+              <div class="prep-caption">
+                <strong>CLAHE</strong>
+                <span>Localized 8x8 adaptive enhancement</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Grad-CAM Explainability Section -->
+        <div class="card explainability-card">
+          <div class="card-header">
+            <div class="card-title">
+              <i data-lucide="eye"></i>
+              <h3>Dynamic Grad-CAM Explainability (Layer 4 Conv Maps)</h3>
+            </div>
+            <div class="view-toggles">
+              <button class="toggle-btn active" data-view="side-by-side">Side-by-Side</button>
+              <button class="toggle-btn" data-view="model-tabs">Model Inspector</button>
+            </div>
+          </div>
+
+          <!-- Side-by-Side Grad-CAM Matrix -->
+          <div id="gradcam-matrix" class="gradcam-matrix-container">
+            
+            <!-- Row: Baseline -->
+            <div class="gradcam-row">
+              <div class="gradcam-row-header">
+                <span class="badge-baseline">Baseline (Original)</span>
+                <span class="gradcam-pred" id="gc-pred-baseline">Predicted: Mild Demented (98.4%)</span>
+              </div>
+              <div class="gradcam-row-images">
+                <div class="gc-col"><img id="gc-orig-baseline" src=""><label>Original MRI</label></div>
+                <div class="gc-col"><img id="gc-prep-baseline" src=""><label>Preprocessed (None)</label></div>
+                <div class="gc-col"><img id="gc-heat-baseline" src=""><label>Grad-CAM Heatmap</label></div>
+                <div class="gc-col"><img id="gc-over-baseline" src=""><label>Saliency Overlay</label></div>
+              </div>
+            </div>
+
+            <!-- Row: HE -->
+            <div class="gradcam-row">
+              <div class="gradcam-row-header">
+                <span class="badge-he">Histogram Equalization (HE)</span>
+                <span class="gradcam-pred" id="gc-pred-he">Predicted: Mild Demented (78.1%)</span>
+              </div>
+              <div class="gradcam-row-images">
+                <div class="gc-col"><img id="gc-orig-he" src=""><label>Original MRI</label></div>
+                <div class="gc-col"><img id="gc-prep-he" src=""><label>Preprocessed (HE)</label></div>
+                <div class="gc-col"><img id="gc-heat-he" src=""><label>Grad-CAM Heatmap</label></div>
+                <div class="gc-col"><img id="gc-over-he" src=""><label>Saliency Overlay</label></div>
+              </div>
+            </div>
+
+            <!-- Row: CLAHE -->
+            <div class="gradcam-row">
+              <div class="gradcam-row-header">
+                <span class="badge-clahe">CLAHE ResNet18</span>
+                <span class="gradcam-pred" id="gc-pred-clahe">Predicted: Mild Demented (99.1%)</span>
+              </div>
+              <div class="gradcam-row-images">
+                <div class="gc-col"><img id="gc-orig-clahe" src=""><label>Original MRI</label></div>
+                <div class="gc-col"><img id="gc-prep-clahe" src=""><label>Preprocessed (CLAHE)</label></div>
+                <div class="gc-col"><img id="gc-heat-clahe" src=""><label>Grad-CAM Heatmap</label></div>
+                <div class="gc-col"><img id="gc-over-clahe" src=""><label>Saliency Overlay</label></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Saliency Anatomical Guide -->
+          <div class="saliency-guide">
+            <div class="guide-title"><i data-lucide="help-circle"></i> Saliency Reading Guide:</div>
+            <p>
+              Warm colors (red/yellow) indicate critical structural regions weighted by ResNet18. In robust models (Baseline & CLAHE), activations cluster around <strong>enlarged lateral ventricles</strong> and <strong>temporal lobe / hippocampal cortices</strong>. In the HE model, diffuse activations often extend to outer skull boundaries due to histogram over-stretching.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TAB 2: RESEARCH METRICS -->
+    <section id="tab-metrics" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="award"></i>
+            <h3>Held-Out Test Set Benchmark Results (N = 960 Scans)</h3>
+          </div>
+          <span class="tag">Disjoint Test Cohort</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="metrics-table">
+            <thead>
+              <tr>
+                <th>Model Architecture</th>
+                <th>Preprocessing Method</th>
+                <th>Test Accuracy</th>
+                <th>Macro Precision</th>
+                <th>Macro Recall</th>
+                <th>Macro F1</th>
+                <th>Weighted F1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Baseline ResNet18</strong></td>
+                <td>Original Unenhanced MRI</td>
+                <td>94.38%</td>
+                <td>95.37%</td>
+                <td><strong>95.23%</strong></td>
+                <td><strong>95.30%</strong></td>
+                <td>94.36%</td>
+              </tr>
+              <tr class="row-warning">
+                <td><strong>Histogram Equalization (HE)</strong></td>
+                <td>Global EqualizeHist</td>
+                <td>78.23% <span class="badge-drop">-16.15%</span></td>
+                <td>78.63%</td>
+                <td>82.49%</td>
+                <td>79.76%</td>
+                <td>78.40%</td>
+              </tr>
+              <tr class="row-highlight">
+                <td><strong>CLAHE ResNet18 (Top Acc)</strong></td>
+                <td>Adaptive Local Contrast</td>
+                <td><strong>95.10%</strong> <span class="badge-top">Top Acc</span></td>
+                <td><strong>96.68%</strong></td>
+                <td>92.81%</td>
+                <td>94.61%</td>
+                <td><strong>95.11%</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-footer-notes">
+          <p><strong>Key Empirical Finding:</strong> Global Histogram Equalization significantly degraded diagnostic accuracy (-16.15%) due to scanner background noise over-amplification. Contrast Limited Adaptive Histogram Equalization (CLAHE) achieved the highest overall test accuracy (95.10%) and highest weighted F1 (95.11%).</p>
+        </div>
+      </div>
+
+      <!-- Static Research Asset Showcase -->
+      <div class="research-assets-grid">
+        <div class="card">
+          <div class="card-header">
+            <h4>Overall Model Metrics Comparison</h4>
+          </div>
+          <img src="/results/comparison/model_metrics_comparison_bar.png" class="asset-img" alt="Metrics Comparison">
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h4>Per-Class F1 Score Comparison</h4>
+          </div>
+          <img src="/results/comparison/per_class_f1_comparison.png" class="asset-img" alt="Per-Class F1">
+        </div>
+        <div class="card" style="grid-column: 1 / -1;">
+          <div class="card-header">
+            <h4>Side-by-Side Test Confusion Matrices (N=960)</h4>
+          </div>
+          <img src="/results/comparison/all_confusion_matrices.png" class="asset-img" alt="Confusion Matrices">
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 3: OVERVIEW -->
+    <section id="tab-overview" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="book-open"></i>
+            <h3>Project Architecture & Scientific Objectives</h3>
+          </div>
+        </div>
+        <div class="overview-content">
+          <h4>Objective</h4>
+          <p>The BrainX project investigates automated classification of brain MRI scans into four dementia-related categories using transfer learning with ResNet18 and explainability with Grad-CAM, comparing three image preprocessing paradigms.</p>
+
+          <div class="stages-grid">
+            <div class="stage-card">
+              <h5>1. Mild Demented</h5>
+              <p>Recognizable cortical thinning and ventricular expansion with moderate functional cognitive impairment.</p>
+            </div>
+            <div class="stage-card">
+              <h5>2. Moderate Demented</h5>
+              <p>Severe ventricular enlargement, prominent sulcal widening, and pronounced cerebral volume loss.</p>
+            </div>
+            <div class="stage-card">
+              <h5>3. Non Demented</h5>
+              <p>Normal age-matched cerebral architecture with preserved cortical thickness and standard ventricular dimensions.</p>
+            </div>
+            <div class="stage-card">
+              <h5>4. Very Mild Demented</h5>
+              <p>Incipient subtle atrophy corresponding to early Mild Cognitive Impairment (MCI).</p>
+            </div>
+          </div>
+
+          <h4>Methodology & Training Details</h4>
+          <ul>
+            <li><strong>Dataset:</strong> 6,400 axial MRI scans strictly partitioned into 70% Train ($4,480$), 15% Validation ($960$), and 15% Held-out Test ($960$).</li>
+            <li><strong>Backbone:</strong> ResNet18 pretrained on ImageNet, fine-tuned with Adam optimizer ($\text{lr} = 10^{-4}$), batch size 16, and class-weighted cross-entropy loss.</li>
+            <li><strong>Explainability Engine:</strong> Gradient-weighted Class Activation Mapping (Grad-CAM) targeting Layer 4 residual convolutional feature maps.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- TAB 4: HISTORY -->
+    <section id="tab-history" class="tab-pane">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i data-lucide="history"></i>
+            <h3>Session Analysis History</h3>
+          </div>
+          <span class="tag" id="history-count-badge">0 Analyses</span>
+        </div>
+        <div id="history-container">
+          <div class="empty-state">
+            <i data-lucide="inbox"></i>
+            <p>No analyses conducted yet in this session. Upload an MRI in the 'New Analysis' tab to begin.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>BrainX Research Platform — Deep Learning Approaches with Explainable AI for Alzheimer's Disease & MCI</p>
+      <p class="footer-sub">Experimental Model Predictions • Requires Professional Clinical Interpretation</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
