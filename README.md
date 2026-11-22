@@ -6,23 +6,36 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![Compliance: RSNA CLAIM 2024](https://img.shields.io/badge/Compliance-RSNA%20CLAIM%202024-green?style=flat-square)](https://pubs.rsna.org/doi/10.1148/ryai.240300)
 
-BrainScope-XAI is an open-source deep learning framework for the automated classification and visual explainability of Alzheimer's Disease (AD) and Mild Cognitive Impairment (MCI) across four distinct clinical stages using structural 2D axial brain Magnetic Resonance Imaging (MRI). 
+BrainScope-XAI is an open-source deep learning and clinical decision-support framework engineered for the automated classification and visual explainability of Alzheimer's Disease (AD) and Mild Cognitive Impairment (MCI) across four distinct clinical stages using structural 2D axial brain Magnetic Resonance Imaging (MRI).
 
-The platform implements an audited, leak-free 7-stage optimization protocol evaluating ResNet-18 feature representations, adaptive contrast preprocessing (CLAHE vs. Global Histogram Equalization), online regularized data augmentation, and inverse-frequency class-imbalance weighting. Model decisions are rendered transparent through Layer-4 Gradient-weighted Class Activation Mapping (Grad-CAM), directly localizing lateral ventricular enlargement and medial temporal lobe atrophy.
+The platform implements an audited, leak-free 7-stage optimization protocol evaluating ResNet-18 deep feature representations, adaptive contrast preprocessing (CLAHE vs. Global Histogram Equalization), online regularized data augmentation, and inverse-frequency class-imbalance weighting. Model decisions are rendered transparent through Layer-4 Gradient-weighted Class Activation Mapping (Grad-CAM), directly localizing lateral ventricular enlargement, medial temporal lobe atrophy, and hippocampal volume loss.
 
 ---
 
 ## Table of Contents
 
 - [Executive Summary & Core Results](#executive-summary--core-results)
-- [System Architecture](#system-architecture)
+- [System Architecture (One-View Pipeline)](#system-architecture-one-view-pipeline)
 - [Dataset Composition & Class Imbalance](#dataset-composition--class-imbalance)
-- [Mathematical Formulations](#mathematical-formulations)
+- [Mathematical Foundations & Theoretical Formulations](#mathematical-foundations--theoretical-formulations)
 - [The 7-Stage Scientific Optimization Arc](#the-7-stage-scientific-optimization-arc)
-- [Final Test Cohort Evaluation](#final-test-cohort-evaluation)
+- [Training Methodology & Optimization Protocol](#training-methodology--optimization-protocol)
+- [Preprocessing & Augmentation Engineering](#preprocessing--augmentation-engineering)
+- [BrainScope-XAI: Preprocessing, Augmentation & Explainability Views](#brainscope-xai-preprocessing-augmentation--explainability-views)
+  - [1. Preprocessing Views: Comparative Filter Analysis](#1-preprocessing-views-comparative-filter-analysis)
+  - [2. Augmentation Views: The Over-Augmentation Penalty](#2-augmentation-views-the-over-augmentation-penalty)
+  - [3. Grad-CAM Views Across Disease Stages](#3-grad-cam-views-across-disease-stages)
+  - [4. Multi-Model Saliency Comparison](#4-multi-model-saliency-comparison)
+  - [5. Clinical Decision-Support & Web Application Architecture](#5-clinical-decision-support--web-application-architecture)
+- [Stage 6 Validation Optimization & Leaderboard](#stage-6-validation-optimization--leaderboard)
+- [Stage 7 Final Test Cohort Evaluation](#stage-7-final-test-cohort-evaluation)
+  - [Seed-by-Seed Performance Metrics](#seed-by-seed-performance-metrics)
+  - [Benchmark Comparison Against Predeclared Baselines](#benchmark-comparison-against-predeclared-baselines)
+  - [Disease-Stage Class Breakdown](#disease-stage-class-breakdown)
+  - [Confusion Matrix & Error Topology](#confusion-matrix--error-topology)
+  - [Stage 7 Final Test Evaluation 4-Panel Visualization](#stage-7-final-test-evaluation-4-panel-visualization)
 - [Paired Statistical Significance (McNemar's Test)](#paired-statistical-significance-mcnemars-test)
 - [Prediction Confidence & Uncertainty Estimation](#prediction-confidence--uncertainty-estimation)
-- [Explainability Engine (Grad-CAM)](#explainability-engine-grad-cam)
 - [Repository Structure](#repository-structure)
 - [Quickstart & Reproduction Guide](#quickstart--reproduction-guide)
 - [Scientific Rigor & Ethical Disclosures (CLAIM 2024)](#scientific-rigor--ethical-disclosures-claim-2024)
@@ -32,66 +45,78 @@ The platform implements an audited, leak-free 7-stage optimization protocol eval
 
 ## Executive Summary & Core Results
 
-On a strictly held-out test cohort of 960 scans, the frozen selected pipeline (`raw_rot5`) demonstrates the following verified performance:
+On a strictly held-out test cohort of 960 axial scans ($15\%$ stratified split), the frozen selected pipeline (`raw_rot5`) demonstrates the following verified quantitative performance:
 
 - **Peak Test Accuracy:** **97.50%** (936 out of 960 scans correctly classified; Seed 17).
 - **Mean Test Accuracy:** **96.56% $\pm$ 1.20%** across three independent random seeds (`17, 42, 2026`).
 - **Peak Macro-Averaged F1-Score:** **98.20%** (Mean: **96.58% $\pm$ 1.97%**), verifying that minority disease detection is maintained alongside majority-class accuracy.
-- **Moderate Dementia Protection:** **100.0% Recall and 100.0% Precision** on peak runs (0 false negatives and 0 false alarms for severe dementia cases).
-- **Statistically Significant Improvement:** Verified via paired McNemar hypothesis testing against the baseline zero-augmentation control ($\chi^2 = 10.081$, $p = 0.001498$, Odds Ratio $= 2.44$).
-- **Uncertainty Separation:** Mean prediction confidence is **97.58%** (median 99.81%) on correct diagnoses, dropping to **71.51%** (median 73.66%) on ambiguous scans.
+- **Moderate Dementia Sensitivity:** **100.0% Recall and 100.0% Precision** on peak runs (0 false negatives and 0 false alarms for severe dementia cases).
+- **Statistically Significant Improvement:** Verified via paired McNemar hypothesis testing with Edwards continuity correction against the baseline zero-augmentation control ($\chi^2 = 10.081$, $p = 0.001498$, Odds Ratio $= 2.44$).
+- **Uncertainty Calibration:** Mean prediction confidence is **97.58%** (median 99.81%) on correct diagnoses, dropping to **71.51%** (median 73.66%) on ambiguous scans.
 
 ---
 
-## System Architecture
+## System Architecture (One-View Pipeline)
 
-The end-to-end classification and interpretability pipeline integrates input preprocessing, online regularized geometric transforms, residual feature extraction, loss weighting, and visual gradient backpropagation.
+The entire classification and visual explainability pipeline operates as a unified, deterministic framework. The diagram below displays the end-to-end data flow in a single horizontal viewport, spanning raw slice ingestion, online regularized augmentation, deep residual feature extraction, class-weighted loss optimization, and gradient-based localization.
 
 ```mermaid
-flowchart TD
-    subgraph Input_Stage ["1. Input Pipeline"]
-        Raw["Raw 2D Axial Brain MRI<br/>(128x128 8-bit Grayscale)"] --> ColorConv["Channel Expansion<br/>(Grayscale to 3-Channel RGB)"]
-        ColorConv --> Rescale["Spatial Bilinear Interpolation<br/>(Resize to 224x224)"]
-        Rescale --> Norm["Channel Standard Normalization<br/>(ImageNet Mean & Std)"]
+flowchart LR
+    subgraph P1 ["1. Input Ingestion"]
+        direction TB
+        A["2D Axial Brain MRI<br/>128x128 Grayscale"] --> B["Bilinear Rescale<br/>224x224x3 RGB"]
+        B --> C["ImageNet Normalization<br/>mu=[0.485, 0.456, 0.406]<br/>sigma=[0.229, 0.224, 0.225]"]
     end
 
-    subgraph Aug_Stage ["2. Training Regularization"]
-        Norm --> AugSwitch{"Execution Mode"}
-        AugSwitch -->|"Train Mode"| Rot["Random Bounded Rotation<br/>(Uniform: [-5 deg, +5 deg])"]
-        AugSwitch -->|"Val / Test Mode"| Det["Deterministic Identity<br/>(Zero Transformation)"]
+    subgraph P2 ["2. Augmentation Policy"]
+        direction TB
+        D{"Execution Mode"}
+        D -->|"Training"| E["Random Rotation<br/>[-5 deg, +5 deg]"]
+        D -->|"Val / Test"| F["Deterministic<br/>Identity Transform"]
     end
 
-    subgraph Backbone ["3. ResNet-18 Deep Feature Extractor"]
-        Rot --> Conv1["7x7 Conv, 64 Filters, Stride 2<br/>BatchNorm + ReLU + MaxPool"]
-        Det --> Conv1
-        Conv1 --> L1["Layer 1: 2 Residual Blocks (64-dim)"]
-        L1 --> L2["Layer 2: 2 Residual Blocks (128-dim)"]
-        L2 --> L3["Layer 3: 2 Residual Blocks (256-dim)"]
-        L3 --> L4["Layer 4: 2 Residual Blocks (512-dim)"]
+    subgraph P3 ["3. ResNet-18 Backbone"]
+        direction TB
+        G["Conv1 + MaxPool<br/>7x7, 64-ch, stride 2"] --> H["Residual Stages L1-L3<br/>BasicBlock 64 to 256 ch"]
+        H --> I["Residual Stage L4<br/>BasicBlock 512 ch Maps"]
     end
 
-    subgraph Head ["4. Classification & Loss Optimization"]
-        L4 --> GAP["Global Average Pooling (GAP)<br/>(512-dim Vector)"]
-        GAP --> FC["Fully Connected Linear Layer<br/>(4 Logits Output)"]
-        FC --> Softmax["Softmax Activation<br/>(Class Probabilities)"]
-        Softmax --> Loss["Inverse-Frequency Weighted Cross-Entropy<br/>(w_c = [1.786, 24.889, 0.500, 0.714])"]
+    subgraph P4 ["4. Classifier Head & Loss"]
+        direction TB
+        J["Global Average Pool<br/>512-dim Feature Vector"] --> K["Linear Classifier Head<br/>4 Disease Stage Logits"]
+        K --> L["Inverse-Weighted CE Loss<br/>w_c = [1.79, 24.89, 0.50, 0.71]"]
     end
 
-    subgraph XAI ["5. Visual Explainability Engine"]
-        L4 -.-> ActMap["Feature Activation Maps A^k<br/>(model.layer4[-1])"]
-        FC -.-> Grad["Gradients dY^c / dA^k<br/>(Target Class Score Backprop)"]
-        ActMap & Grad --> GradCAM["Global Average Pooling of Gradients + ReLU<br/>L_GradCAM^c = ReLU(Sum alpha_k * A^k)"]
-        GradCAM --> Overlay["Colormap Heatmap Overlay<br/>(Lateral Ventricles & Temporal Lobe)"]
+    subgraph P5 ["5. Explainability Branch (XAI)"]
+        direction TB
+        M["Feature Activations A_k<br/>model.layer4[-1]"]
+        N["Target Gradients<br/>dY_c / dA_k"]
+        M & N --> O["Layer-4 Grad-CAM Saliency<br/>ReLU(Sum alpha_k * A_k)"]
     end
+
+    C --> D
+    E --> G
+    F --> G
+    I --> J
+    I -.-> M
+    K -.-> N
 ```
+
+### Architectural Component Walkthrough:
+1. **Input Ingestion:** 8-bit raw grayscale axial slices ($128 \times 128$) are converted to 3-channel tensors, bilinearly rescaled to $224 \times 224$, and normalized using standard ImageNet channel statistics ($\mu = [0.485, 0.456, 0.406]$, $\sigma = [0.229, 0.224, 0.225]$).
+2. **Augmentation Policy:** Online random rotation bounded strictly within $[-5^\circ, +5^\circ]$ during training only. Validation and testing transforms are strictly deterministic identity transforms.
+3. **Deep Feature Extractor:** ResNet-18 initialized with torchvision ImageNet weights. The network consists of an initial $7 \times 7$ convolution, max pooling, and four residual stages with skip connections producing 512-dimensional feature maps at `layer4`.
+4. **Classification Head:** Global Average Pooling (GAP) collapses the spatial dimensions of `layer4` into a 512-dimensional vector, followed by a linear classification layer mapping to 4 disease logits.
+5. **Loss Formulation:** Inverse-frequency class-weighted Cross-Entropy loss computed from training counts only, heavily penalizing errors on rare clinical stages.
+6. **Interpretability Branch:** Gradient backpropagation from the target class logit to the final residual block (`layer4[-1]`), generating rectified class activation heatmaps overlaying ventricular and temporal regions.
 
 ---
 
 ## Dataset Composition & Class Imbalance
 
-The benchmark utilizes 6,400 structural 2D axial brain MRI scans categorized across four progressive stages of neurodegeneration. Data splitting follows a strict 70/15/15 stratified division preserved via immutable SHA-256 manifest validation.
+The benchmark utilizes 6,400 structural 2D axial brain MRI scans categorized across four progressive stages of neurodegeneration. Data splitting follows a strict 70/15/15 stratified division preserved via immutable SHA-256 manifest validation (`Dataset/splits/splits.csv`).
 
-```
+```text
 Total Cohort (N = 6,400 Scans)
   |-- Training Split   (70%): 4,480 scans (Model Optimization)
   |-- Validation Split (15%):   960 scans (Hyperparameter & Checkpoint Selection)
@@ -112,17 +137,21 @@ The dataset exhibits a severe 50:1 class imbalance between Non Demented controls
 
 ---
 
-## Mathematical Formulations
+## Mathematical Foundations & Theoretical Formulations
 
 ### 1. Inverse-Frequency Class Weighting
 To adjust the gradient penalty proportionally to class scarcity, weights $w_c$ for class $c \in \{0, 1, 2, 3\}$ are formulated as:
 
 $$w_c = \frac{N_{\text{train}}}{K \times N_c}$$
 
-where $N_{\text{train}} = 4,480$ is the total number of training samples, $K = 4$ is the number of classes, and $N_c$ is the frequency of class $c$ in the training split.
+where $N_{\text{train}} = 4,480$ is the total number of training samples, $K = 4$ is the number of classes, and $N_c$ is the frequency of class $c$ in the training split:
+- $w_{\text{Mild}} = 4480 / (4 \times 627) = 1.7863$
+- $w_{\text{Moderate}} = 4480 / (4 \times 45) = 24.8889$
+- $w_{\text{Non}} = 4480 / (4 \times 2240) = 0.5000$
+- $w_{\text{VeryMild}} = 4480 / (4 \times 1568) = 0.7143$
 
 ### 2. Weighted Cross-Entropy Loss
-For ground-truth target vector $\mathbf{y}$ and predicted probability vector $\hat{\mathbf{y}}$, the weighted objective function minimized during backpropagation is:
+For ground-truth one-hot target vector $\mathbf{y}$ and predicted probability vector $\hat{\mathbf{y}}$, the weighted objective function minimized during backpropagation is:
 
 $$\mathcal{L}_{\text{WCE}}(\mathbf{y}, \hat{\mathbf{y}}) = - \sum_{c=0}^{K-1} w_c \, y_c \log(\hat{y}_c)$$
 
@@ -177,7 +206,128 @@ Every design decision was established through a seven-stage empirical progressio
 
 ---
 
-## Final Test Cohort Evaluation
+## Training Methodology & Optimization Protocol
+
+To guarantee mathematical replicability, all training routines follow strict deterministic execution standards:
+
+### Hyperparameter Configuration
+
+| Hyperparameter Parameter | Technical Value | Engineering Rationale |
+| :--- | :--- | :--- |
+| **Base Architecture** | ResNet-18 (Torchvision Weights) | High sample efficiency; prevents overfitting on small medical cohorts. |
+| **Optimizer** | Adam ($\beta_1=0.9, \beta_2=0.999$) | Rapid convergence on transfer learning representations. |
+| **Initial Learning Rate** | $\eta = 1 \times 10^{-4}$ | Prevents catastrophic forgetting of ImageNet pretrained low-level filters. |
+| **Mini-Batch Size** | 16 samples | Optimal gradient stochasticity for 4,480 training scans. |
+| **Maximum Epochs** | 8 epochs | Empirical convergence achieved by epoch 4–6; prevents late-epoch memorization. |
+| **Early Stopping** | Patience $= 5$ epochs | Monitored on Validation Macro-Averaged F1-Score. |
+| **Checkpoint Policy** | Best Validation Macro-F1 | Selects checkpoint optimizing minority-class sensitivity over raw accuracy. |
+| **Loss Weighting** | Inverse-frequency $w_c$ | $w = [1.7863, 24.8889, 0.5000, 0.7143]$ derived exclusively from training set. |
+| **CuDNN Execution** | `deterministic = True`, `benchmark = False` | Guarantees identical floating-point convolution operations across runs. |
+| **DataLoader Seeds** | `torch.Generator().manual_seed(seed)` | Seed worker function guarantees deterministic batch sample ordering. |
+
+### Training Dynamics & Loss Convergence
+
+The figure below illustrates the training and validation trajectory across the baseline, CLAHE, and Global HE conditions:
+
+![Training Curves Comparison](results/comparison/training_curves_comparison.png)
+
+- **Rapid Initial Convergence:** Weighted cross-entropy drives training loss from $>1.10$ down to $<0.15$ within the first 3 epochs.
+- **Validation Stability:** Validation accuracy plateaus smoothly above $96\%$, with minimal divergence from training loss, verifying absence of severe overparameterization.
+
+---
+
+## Preprocessing & Augmentation Engineering
+
+Brain MRI scans differ fundamentally from natural photographic images: anatomical structures are geometrically organized, spatial symmetry is biologically meaningful, and pixel intensities correlate directly with tissue densities.
+
+### 1. Contrast Preprocessing Analysis
+- **Raw Grayscale (Original):** Retains the raw dynamic range and native tissue contrast between cerebrospinal fluid (CSF), gray matter (GM), and white matter (WM).
+- **Global Histogram Equalization (HE):** Computes a global cumulative distribution function (CDF) across the entire image. Because background air occupies $>50\%$ of the field of view in axial brain MRI, global HE maps background noise into mid-gray levels, producing severe background artifacts and washed-out cortical margins.
+- **Contrast Limited Adaptive Histogram Equalization (CLAHE):** Divides the image into contextual tiles ($8 \times 8$) and applies contrast limiting (clip limits $1.5, 2.0, 2.5$) before bilinear interpolation. This prevents background noise amplification and sharpens sulcal boundaries.
+
+### 2. Augmentation & The Over-Augmentation Penalty
+Online data augmentation was investigated to establish the boundary between beneficial regularization and anatomical distortion:
+- **Mild Rotation ($\pm 5^\circ$):** Matches natural head coil tilt during clinical patient positioning. Provides robust translational and rotational invariance while maintaining the bilateral aspect ratio of the lateral ventricles.
+- **Aggressive Rotation ($\pm 10^\circ$) & Affine Shear:** Induces severe artificial tilts that distort ventricular symmetry and mimic pathological shifts, degrading validation accuracy and increasing variance across random seeds.
+
+---
+
+## BrainScope-XAI: Preprocessing, Augmentation & Explainability Views
+
+This section provides visual verification of how BrainScope-XAI processes input data across contrast enhancement filters, online augmentations, and Layer-4 Grad-CAM explainability across the four clinical stages.
+
+### 1. Preprocessing Views: Comparative Filter Analysis
+
+In Stage 3, we evaluated Global Histogram Equalization (HE) and Contrast Limited Adaptive Histogram Equalization (CLAHE) at multiple clip limits against original raw scans.
+
+![Preprocessing Comparison Panel](results/experiments/preprocessing_panels/preprocessing_comparison_panel.png)
+
+#### Filter Characteristics:
+- **Raw Grayscale:** Natural anatomical intensity gradients preserved; clean zero-intensity background.
+- **Global HE:** Over-amplified background noise; loss of soft-tissue discrimination between ventricles and white matter.
+- **CLAHE (clipLimit=1.5, tileGridSize=8x8):** Enhanced cortical edge definition without background saturation.
+
+---
+
+### 2. Augmentation Views: The Over-Augmentation Penalty
+
+In Stage 4, training-only transforms were benchmarked to identify the optimal regularization threshold.
+
+![Augmentation Examples Panel](results/experiments/augmentation_panels/augmentation_examples_panel.png)
+
+#### Augmentation Insights:
+- **$\pm 5^\circ$ Rotation:** Anatomically valid head coil variance; preserves ventricular geometry.
+- **$\pm 10^\circ$ Rotation & Affine Shear:** Induces structural deformation that leads to false negatives on Moderate Demented scans.
+
+---
+
+### 3. Grad-CAM Views Across Disease Stages
+
+Layer-4 Grad-CAM extracts spatial heatmaps from `model.layer4[-1]`, overlaying warm activation zones on the brain structures responsible for the classification.
+
+| Clinical Stage | Input MRI & Grad-CAM Overlay | Primary Anatomical Focus Zone | Clinical Correlation |
+| :--- | :---: | :--- | :--- |
+| **Moderate Demented** | ![Moderate Grad-CAM](results/gradcam/Moderate/Moderate_1.png) | Lateral Ventricles & Cortical Sulci | Severe expansion of lateral ventricles and generalized cerebral volume loss. |
+| **Mild Demented** | ![Mild Grad-CAM](results/gradcam/Mild/Mild_1.png) | Medial Temporal Lobe & Hippocampus | Bilateral hippocampal atrophy and widening of the Sylvian fissure. |
+| **Very Mild Demented** | ![Very Mild Grad-CAM](results/gradcam/Very%20Mild/Very%20Mild_1.png) | Periventricular & Temporal Margins | Subtle early ventricular blunting and early entorhinal cortical thinning. |
+| **Non Demented** | ![Non Demented Grad-CAM](results/gradcam/Non%20Demented/Non%20Demented_1.png) | Normal Cortical Margins | Symmetric baseline cortex; absent ventricular enlargement. |
+
+---
+
+### 4. Multi-Model Saliency Comparison
+
+Comparing Grad-CAM activations across Baseline, Global HE, and CLAHE models reveals that baseline and CLAHE maintain precise anatomical focus, whereas HE diffuses activations into background noise:
+
+![Multi-Model Grad-CAM Comparison](results/gradcam/comparison/Moderate/sample_1_comparison.png)
+
+---
+
+### 5. Clinical Decision-Support & Web Application Architecture
+
+BrainScope-XAI provides an interactive clinical decision-support interface featuring:
+- **Multi-Model Consensus Engine:** Concurrently queries `resnet18_frozen_winner.pth`, `resnet18_clahe.pth`, and `resnet18_baseline.pth`. Concordant predictions increase diagnostic confidence; discordant cases automatically trigger clinical review.
+- **Dynamic Grad-CAM Rendering:** Computes real-time saliency maps on user-uploaded axial DICOM or JPEG scans, generating interactive opacity-controlled overlays.
+- **Automated Clinical PDF Report Generator:** Compiles diagnostic stage predictions, class confidence distributions, Grad-CAM heatmaps, and formal RSNA CLAIM 2024 compliance disclaimers into exportable clinical documentation.
+
+---
+
+## Stage 6 Validation Optimization & Leaderboard
+
+The official validation leaderboard synthesized from all candidate combinations across seeds `17, 42, 2026`:
+
+| Rank | Model Pipeline | Preprocessing | Augmentation Policy | Val Macro-F1 (Mean $\pm$ Std) | Val Accuracy (Mean $\pm$ Std) | Status |
+| :---: | :--- | :--- | :--- | :---: | :---: | :---: |
+| **1** | **`raw_rot5`** | **Raw Grayscale** | **RandomRotation($\pm 5^\circ$)** | **97.66% $\pm$ 0.44%** | **96.91% $\pm$ 0.52%** | **Frozen Winner** |
+| 2 | `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 97.10% $\pm$ 0.61% | 96.42% $\pm$ 0.70% | Benchmark |
+| 3 | `raw_rot10` | Raw Grayscale | RandomRotation($\pm 10^\circ$) | 96.55% $\pm$ 1.85% | 96.15% $\pm$ 2.26% | High Variance |
+| 4 | `raw_no_aug` | Raw Grayscale | None (Baseline) | 95.89% $\pm$ 0.82% | 95.49% $\pm$ 0.75% | Control |
+| 5 | `he_rot5` | Global HE | RandomRotation($\pm 5^\circ$) | 95.12% $\pm$ 1.40% | 94.88% $\pm$ 1.25% | Degraded |
+
+![Stage 6 Validation Leaderboard Panel](results/experiments/stage6_validation_leaderboard_panel.png)
+
+---
+
+## Stage 7 Final Test Cohort Evaluation
 
 The frozen winning pipeline (`raw_rot5`) and predeclared baselines were evaluated on the 960 unblinded test scans under deterministic inference (zero test augmentation).
 
@@ -190,7 +340,7 @@ The frozen winning pipeline (`raw_rot5`) and predeclared baselines were evaluate
 | **Seed 2026** | **914 / 960** | **95.21%** | **[93.67%, 96.39%]** | **94.38%** | **93.66%** | **88.9% (8/9)** | **100.0%** |
 | **Mean $\pm$ Std** | **927.0 $\pm$ 11.5** | **96.56% $\pm$ 1.20%** | — | **96.58% $\pm$ 1.97%** | **96.66% $\pm$ 2.61%** | **96.30% $\pm$ 6.42%** | **100.0% $\pm$ 0.0%** |
 
-### Benchmark Comparison Against All Predeclared Baseline Models
+### Benchmark Comparison Against Predeclared Baselines
 
 | Model Pipeline Code | Input Preprocessing | Online Augmentation Policy | Test Accuracy (Mean $\pm$ Std) | Test Macro-F1 (Mean $\pm$ Std) | Test Balanced Accuracy | Moderate Recall |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
@@ -198,6 +348,8 @@ The frozen winning pipeline (`raw_rot5`) and predeclared baselines were evaluate
 | `clahe15_rot5` | CLAHE 1.5, $8\times 8$ | RandomRotation($\pm 5^\circ$) | 95.80% $\pm$ 0.90% | 96.34% $\pm$ 0.42% | 95.92% $\pm$ 0.63% | 96.30% $\pm$ 6.42% |
 | `raw_rot10` | Original Grayscale | RandomRotation($\pm 10^\circ$) [Legacy] | 96.11% $\pm$ 1.67% | 95.38% $\pm$ 2.49% | 95.04% $\pm$ 2.56% | 92.59% $\pm$ 6.42% |
 | `raw_no_aug` | Original Grayscale | None [Baseline Control] | 94.72% $\pm$ 0.42% | 93.97% $\pm$ 1.69% | 93.05% $\pm$ 3.55% | 88.89% $\pm$ 11.11% |
+
+![Comparative Model Metrics Bar](results/comparison/model_metrics_comparison_bar.png)
 
 ### Disease-Stage Class Breakdown (`raw_rot5` Across 3 Seeds)
 
@@ -208,7 +360,7 @@ The frozen winning pipeline (`raw_rot5`) and predeclared baselines were evaluate
 | **Very Mild Demented** | 336 | **96.43%** | **96.37%** | **96.39%** | **97.62% (328 / 336)** |
 | **Non Demented** | 480 | **96.39%** | **98.09%** | **97.23%** | **97.08% (466 / 480)** |
 
-### Confusion Matrix (Peak Run: Seed 17, Accuracy: 97.50%)
+### Confusion Matrix & Error Topology
 
 ```text
                         Predicted Class
@@ -219,9 +371,15 @@ Actual Non Dem         3      0    466       11        480        97.1%
 Actual Very Mild       0      0      8      328        336        97.6%
 ```
 
-- **Diagnostic Accuracy:** 936 correct diagnoses on the diagonal; 24 total errors.
-- **Error Distribution:** 19 of the 24 errors ($79.2\%$) occurred between Non Demented and Very Mild Demented, representing the clinically subtle boundary between normal brain aging and early memory impairment.
-- **Zero Catastrophic Confusions:** No Non Demented scan was misclassified as Moderate Demented, and no Moderate Demented scan was misclassified as healthy.
+- **Diagonal Accuracy:** 936 correct diagnoses on the primary diagonal; 24 total errors out of 960 scans.
+- **Borderline Error Clustering:** 19 of the 24 errors ($79.2\%$) occurred between Non Demented and Very Mild Demented, corresponding directly to the subtle clinical continuum between normal cognitive aging and early MCI.
+- **Zero Critical False Negatives:** No Moderate Demented scan was misclassified as healthy (Non Demented), ensuring severe clinical safety.
+
+![Comparative Confusion Matrices](results/comparison/all_confusion_matrices.png)
+
+### Stage 7 Final Test Evaluation 4-Panel Visualization
+
+![Stage 7 Final Test Evaluation Panel](results/evaluation/final_test_evaluation_panel.png)
 
 ---
 
@@ -230,7 +388,7 @@ Actual Very Mild       0      0      8      328        336        97.6%
 To prove that accuracy gains over baselines were statistically meaningful and not random variations, paired McNemar's tests were conducted on the exact same 960 test instances.
 
 | Paired Model Comparison | Evaluation Seed | Contingency Matrix ($n_{00}, b, c, n_{11}$) | McNemar $\chi^2$ | $p$-value | Odds Ratio (95% CI) | Net Accuracy Gain (95% CI) | Statistical Verdict |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | **`raw_rot5` vs. `raw_no_aug`** | **Seed 17** | **892, 44, 18, 6** | **10.081** | **0.001498** | **2.44 [1.41, 4.23]** | **+2.71% [+1.11%, +4.31%]** | **Significant ($p < 0.01$)** |
 | `raw_rot5` vs. `raw_no_aug` | Seed 42 | 893, 38, 20, 9 | 4.983 | 0.025601 | 1.90 [1.11, 3.27] | +1.88% [+0.32%, +3.43%] | Significant ($p < 0.05$) |
 | **`raw_rot5` vs. `raw_rot10`** | **Seed 42** | **888, 43, 19, 10** | **8.532** | **0.003489** | **2.26 [1.32, 3.88]** | **+2.50% [+0.90%, +4.10%]** | **Significant ($p < 0.01$)** |
@@ -249,17 +407,6 @@ Evaluating softmax output probabilities reveals clean separation between correct
 | **Incorrect Diagnosis** | 24 scans | **71.51%** | **73.66%** | $\pm 14.83\%$ | Marked confidence drop on borderline/ambiguous scans. |
 
 **Clinical Utility:** A triage threshold set at $80\%$ confidence allows the system to autonomously verify $93.8\%$ of scans while flagging ambiguous borderline scans for radiologist review.
-
----
-
-## Explainability Engine (Grad-CAM)
-
-Interpretability is generated via Gradient-weighted Class Activation Mapping (Grad-CAM) targeting the final convolutional layer (`model.layer4[-1]`).
-
-### Anatomical Saliency Findings:
-1. **Severe / Moderate Dementia:** Saliency maps isolate extreme symmetric ventricular dilation (lateral ventricles) and extensive diffuse cortical volume loss.
-2. **Mild Dementia & MCI:** Saliency maps concentrate selectively on the medial temporal lobes, including hippocampal atrophy and widening of the Sylvian fissure.
-3. **Non Demented:** Activations remain evenly distributed across standard cortical margins without ventricular expansion signals.
 
 ---
 
@@ -293,13 +440,17 @@ BRAINSCOPE-XAI/
 │   ├── experiments/                    # Stages 2-6 manifests, training histories & summaries
 │   │   ├── experiment_ledger.csv       # Master 48-run immutable experiment ledger
 │   │   ├── validation_leaderboard.csv  # Stage 6 official validation leaderboard
-│   │   └── frozen_pipeline_config.json # Stage 6 locked winning parameters
-│   └── evaluation/                     # Stage 7 final test evaluation deliverables
-│       ├── confidence_intervals.json   # Wilson score & bootstrap 95% CIs
-│       ├── mcnemar_paired_comparisons.json # McNemar chi-square & odds ratios
-│       ├── final_test_aggregates.csv   # Aggregated metrics (Mean +/- Std)
-│       ├── test_predictions_frozen_winner.csv # Per-image predictions (2,880 rows)
-│       └── final_test_evaluation_panel.png    # 4-panel high-resolution metric figure
+│   │   ├── frozen_pipeline_config.json # Stage 6 locked winning parameters
+│   │   ├── preprocessing_panels/       # Stage 3 visual comparison panels
+│   │   └── augmentation_panels/        # Stage 4 visual before/after panels
+│   ├── evaluation/                     # Stage 7 final test evaluation deliverables
+│   │   ├── confidence_intervals.json   # Wilson score & bootstrap 95% CIs
+│   │   ├── mcnemar_paired_comparisons.json # McNemar chi-square & odds ratios
+│   │   ├── final_test_aggregates.csv   # Aggregated metrics (Mean +/- Std)
+│   │   ├── test_predictions_frozen_winner.csv # Per-image predictions (2,880 rows)
+│   │   └── final_test_evaluation_panel.png    # 4-panel high-resolution metric figure
+│   ├── comparison/                     # Comparative training curves and confusion matrices
+│   └── gradcam/                        # Layer-4 Grad-CAM saliency heatmaps & multi-model comparisons
 ├── src/
 │   ├── api/                            # FastAPI backend service
 │   ├── data/                           # Dataset loaders and integrity validators
@@ -365,7 +516,7 @@ python -m src.evaluation.stage7_final_test_evaluation
 
 ### Viewing the Terminal Dashboard
 
-To inspect the full formatted terminal dashboard summarizing all datasets, splits, confidence intervals, confusion matrices, and McNemar tests:
+To inspect the formatted terminal dashboard summarizing all datasets, splits, confidence intervals, confusion matrices, and McNemar tests:
 
 ```powershell
 python show_results.py
