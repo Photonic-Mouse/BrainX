@@ -212,13 +212,24 @@ async function fetchSampleCohort() {
     const samples = await res.json();
 
     container.innerHTML = "";
-    samples.forEach(s => {
+    const classCounters = {};
+
+    samples.forEach((s, idx) => {
+      const cName = s.class_name;
+      classCounters[cName] = (classCounters[cName] || 0) + 1;
+      const count = classCounters[cName];
+
+      let shortClass = cName.replace(" Demented", "");
+      if (shortClass === "Very Mild") shortClass = "Very Mild";
+      else if (shortClass === "Moderate") shortClass = "Moderate";
+      else if (shortClass === "Non") shortClass = "Non-Dem";
+
+      const label = `${shortClass} #${count}`;
+
       const chip = document.createElement("button");
       chip.className = "sample-chip";
-      
-      let shortClass = s.class_name.replace(" Demented", "");
-      if (shortClass === "Very Mild") shortClass = "V. Mild";
-      chip.innerHTML = `<i data-lucide="scan"></i><span>${shortClass} (${s.filename.slice(0, 10)})</span>`;
+      chip.title = `${s.class_name} • File: ${s.filename}`;
+      chip.innerHTML = `<i data-lucide="scan"></i><span>${label}</span>`;
 
       chip.addEventListener("click", () => {
         document.querySelectorAll(".sample-chip").forEach(c => c.classList.remove("active"));

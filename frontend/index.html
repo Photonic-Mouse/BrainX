@@ -272,8 +272,8 @@
               <div class="consensus-content">
                 <div class="consensus-status-line">
                   <span class="consensus-tag" id="consensus-badge">CONSENSUS VERIFIED</span>
-                  <h3 id="consensus-title">Full Consensus: 3/3 Independent Models Agree</h3>
                 </div>
+                <h3 id="consensus-title">Full Consensus: 3/3 Independent Models Agree</h3>
                 <p id="consensus-summary" class="consensus-desc">
                   All three independent ResNet-18 architectures unanimously diagnosed this scan.
                 </p>
@@ -376,7 +376,7 @@
             <div class="gradcam-card" id="xai-card-baseline">
               <div class="gradcam-card-header">
                 <div class="model-badge-header">
-                  <span class="model-code">MODEL A</span>
+                  <span class="model-code">A</span>
                   <h4>Baseline ResNet-18</h4>
                 </div>
                 <span class="badge badge-subtle">Raw Grayscale</span>
@@ -405,10 +405,10 @@
             <div class="gradcam-card" id="xai-card-he">
               <div class="gradcam-card-header">
                 <div class="model-badge-header">
-                  <span class="model-code">MODEL B</span>
+                  <span class="model-code">B</span>
                   <h4>Global HE ResNet-18</h4>
                 </div>
-                <span class="badge badge-warning">Global HE (Noise Blowout)</span>
+                <span class="badge badge-warning">Global HE (Noise)</span>
               </div>
 
               <div class="gradcam-image-frame">
@@ -434,10 +434,10 @@
             <div class="gradcam-card winner-card" id="xai-card-clahe">
               <div class="gradcam-card-header">
                 <div class="model-badge-header">
-                  <span class="model-code">MODEL C</span>
+                  <span class="model-code">C</span>
                   <h4>CLAHE ResNet-18</h4>
                 </div>
-                <span class="badge badge-success">Phase 1 Winner (CLAHE 2.0)</span>
+                <span class="badge badge-success">Winner (CLAHE 2.0)</span>
               </div>
 
               <div class="gradcam-image-frame">
@@ -571,14 +571,14 @@
               <table class="clinical-table leaderboard-table">
                 <thead>
                   <tr>
-                    <th>Rank</th>
+                    <th>#</th>
                     <th>Model Pipeline</th>
-                    <th>Preprocessing Filter</th>
+                    <th>Preprocessing</th>
                     <th>Augmentation Policy</th>
-                    <th>Test Accuracy (Mean ± Std)</th>
-                    <th>Macro-F1 (Mean ± Std)</th>
-                    <th>Balanced Acc</th>
-                    <th>Moderate Recall</th>
+                    <th>Test Accuracy</th>
+                    <th>Macro-F1</th>
+                    <th>Bal. Acc</th>
+                    <th>Mod. Recall</th>
                     <th>Status</th>
                   </tr>
                 </thead>
