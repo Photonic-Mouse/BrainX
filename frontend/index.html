@@ -269,6 +269,14 @@
                 <i data-lucide="alert-circle"></i>
                 <span>Investigational decision-support tool adhering to RSNA CLAIM 2024. For research exploration only.</span>
               </div>
+
+              <!-- Quick Local Disk Proof Launcher -->
+              <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-color); display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; font-size: 0.72rem; justify-content: center;" onclick="fetch('/api/open-run-folder', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({})})" title="Opens results/app_runs in Windows Explorer">
+                  <i data-lucide="folder-search"></i>
+                  <span>Proof 1: Open Disk Runs</span>
+                </button>
+              </div>
             </div>
 
           </div>
@@ -302,12 +310,19 @@
                 </p>
               </div>
               <div class="consensus-actions">
+                <button class="btn btn-outline btn-sm" id="btn-open-run-folder" title="Open newly generated timestamped run folder on local disk (Proof 1)">
+                  <i data-lucide="folder-check"></i>
+                  <span>Verify Run Disk Folder</span>
+                </button>
                 <button class="btn btn-secondary btn-sm" id="btn-download-run-report">
                   <i data-lucide="file-down"></i>
                   <span>Patient PDF Report</span>
                 </button>
                 <button class="btn btn-primary btn-sm" id="btn-jump-gradcam">
                   <i data-lucide="eye"></i>
+                  <span>Inspect Grad-CAM Tri-View</span>
+                </button>
+              </div>
                   <span>View Grad-CAM Tri-View</span>
                 </button>
               </div>

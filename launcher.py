@@ -89,30 +89,41 @@ def check_port_and_health():
     Returns:
       'brainx_running': Port is open and /api/health confirms BrainX is already running.
       'port_occupied': Port is open, but did not respond with BrainX health info.
-      'port_free': Port is not open.
+      'port_free': Port is available to bind.
     """
     print(f"\n[4/5] Checking port {PORT} availability...")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1.5)
-    result = sock.connect_ex((HOST, PORT))
-    sock.close()
-
-    if result != 0:
-        print(f"      -> Port {PORT} is available.")
-        return "port_free"
-
-    # Port is open: check if it's our BrainX service
+    # 1. First check if BrainX is already running
     try:
         req = urllib.request.Request(HEALTH_URL, headers={"User-Agent": "BrainX-Launcher"})
-        with urllib.request.urlopen(req, timeout=2.5) as res:
+        with urllib.request.urlopen(req, timeout=1.5) as res:
             if res.status == 200:
                 body = json.loads(res.read().decode())
                 if body.get("status") == "healthy" and "models_loaded" in body:
+                    print("      -> BrainX is already running on port 8000.")
                     return "brainx_running"
     except Exception:
         pass
 
-    return "port_occupied"
+    # 2. Try binding with SO_REUSEADDR to see if port is free for Uvicorn
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind((HOST, PORT))
+        s.close()
+        print(f"      -> Port {PORT} is available.")
+        return "port_free"
+    except Exception:
+        # Brief retry in case of lingering connection tear-down
+        time.sleep(2)
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((HOST, PORT))
+            s.close()
+            print(f"      -> Port {PORT} is available.")
+            return "port_free"
+        except Exception:
+            return "port_occupied"
 
 
 def wait_for_backend_ready(timeout_seconds=35):

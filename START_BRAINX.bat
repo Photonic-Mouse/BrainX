@@ -5,7 +5,7 @@ cd /d "%~dp0"
 
 echo ======================================================================
 echo   BRAINX: MULTI-MODEL BRAIN MRI ANALYSIS SYSTEM
-echo   Automated Demonstration & Production Launcher
+echo   Automated Demonstration and Production Launcher
 echo ======================================================================
 echo.
 
@@ -28,15 +28,13 @@ if not exist "src\models\resnet.py" (
     exit /b 1
 )
 
-:: 2. Verify Virtual Environment
-if not exist "venv\Scripts\python.exe" (
-    echo [ERROR] Virtual environment missing!
-    echo Could not locate Python interpreter at: venv\Scripts\python.exe
-    echo.
-    echo Please create/configure the virtual environment before launching.
-    echo.
-    pause
-    exit /b 1
+:: 2. Verify Python Interpreter
+if exist "venv\Scripts\python.exe" (
+    set "PYTHON_EXE=.\venv\Scripts\python.exe"
+    echo [INFO] Using virtual environment Python: venv\Scripts\python.exe
+) else (
+    set "PYTHON_EXE=python"
+    echo [INFO] Using system Python
 )
 
 :: 3. Verify Model Checkpoints
@@ -62,7 +60,7 @@ if not exist "checkpoints\resnet18_clahe.pth" (
 )
 
 :: 4. Launch through Python Orchestrator
-.\venv\Scripts\python.exe launcher.py
+%PYTHON_EXE% launcher.py
 set LAUNCHER_EXIT_CODE=%ERRORLEVEL%
 
 if %LAUNCHER_EXIT_CODE% neq 0 (

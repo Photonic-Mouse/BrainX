@@ -272,6 +272,23 @@ def get_analysis_history():
     return history_store[:25]
 
 
+@app.post("/api/open-run-folder")
+def open_run_folder(req: dict = Body(...)):
+    """Opens a specified run directory or test directory directly in Windows File Explorer."""
+    path = req.get("path")
+    if not path or not os.path.exists(path):
+        run_id = req.get("run_id")
+        if run_id:
+            path = os.path.join(RUNS_DIR, run_id)
+        else:
+            path = RUNS_DIR
+    try:
+        os.startfile(path)
+        return {"status": "success", "opened": path}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+
 # Mount static assets for run results, evaluations, gradcam, and comparisons
 if os.path.exists(RUNS_DIR):
     app.mount("/results/app_runs", StaticFiles(directory=RUNS_DIR), name="app_runs")

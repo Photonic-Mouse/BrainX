@@ -139,6 +139,7 @@ class MRIAnalysisEngine:
     def analyze(self, image_bytes: bytes, filename: str = "uploaded_mri.jpg"):
         """Executes full three-model inference, Grad-CAM generation, and agreement analysis."""
         # 1. Decode raw image
+        t_start = time.time()
         np_arr = np.frombuffer(image_bytes, np.uint8)
         raw_gray = cv2.imdecode(np_arr, cv2.IMREAD_GRAYSCALE)
 
@@ -149,6 +150,12 @@ class MRIAnalysisEngine:
         run_id = f"run_{int(time.time())}_{uuid.uuid4().hex[:6]}"
         run_dir = os.path.join(RUNS_DIR, run_id)
         os.makedirs(run_dir, exist_ok=True)
+
+        print("\n" + "=" * 76)
+        print(f" [CLINICAL INFERENCE DISPATCH] Run ID: {run_id}")
+        print(f" Timestamp : {time.strftime('%Y-%m-%d %H:%M:%S')} UTC | Source: {filename} ({orig_w}x{orig_h})")
+        print(f" Hardware  : {str(self.device).upper()} ({torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'})")
+        print("-" * 76)
 
         # Resize to 224x224 as required by the ResNet18 pipeline
         raw_224 = cv2.resize(raw_gray, (224, 224), interpolation=cv2.INTER_LINEAR)
@@ -280,10 +287,20 @@ class MRIAnalysisEngine:
             "clahe": prep_images["clahe"]["b64"]
         }
 
+        elapsed_ms = (time.time() - t_start) * 1000.0
+        print(f" [PYTORCH FORWARD PASSES & GRAD-CAM BACKPROP COMPLETED IN {elapsed_ms:.1f}ms]")
+        for k in ["baseline", "he", "clahe"]:
+            m = model_results[k]
+            print(f"  * {m['name']:<36} : {m['predicted_class']:<20} ({m['confidence_pct']:>5.1f}%)")
+        print(f" [CONSENSUS] {agreement_status} -> {consensus_class}")
+        print(f" [DISK AUDIT] 9 artifacts saved to: {run_dir}")
+        print("=" * 76 + "\n")
+
         response_payload = {
             "run_id": run_id,
             "timestamp": time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime()),
             "filename": filename,
+            "latency_ms": round(elapsed_ms, 1),
             "image_dimensions": f"{orig_w}x{orig_h}",
             "device": str(self.device),
             "class_names": CLASS_NAMES,

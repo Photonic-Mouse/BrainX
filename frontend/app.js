@@ -365,6 +365,22 @@ function renderAnalysisOutput(data) {
     };
   }
 
+  // Setup Local Disk Proof 1 folder open button
+  const btnOpenRunFolder = document.getElementById("btn-open-run-folder");
+  if (btnOpenRunFolder) {
+    btnOpenRunFolder.onclick = async () => {
+      try {
+        await fetch("/api/open-run-folder", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ run_id: data.run_id, path: data.run_dir })
+        });
+      } catch (err) {
+        console.error("Could not trigger disk folder open:", err);
+      }
+    };
+  }
+
   // B. Tri-Model Comparative Cards
   const grid = document.getElementById("models-tri-grid");
   grid.innerHTML = "";
