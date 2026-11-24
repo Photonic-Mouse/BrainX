@@ -108,6 +108,19 @@ def get_research_metrics():
     }
 
 
+@app.get("/api/download-phase1-report")
+def download_phase1_report():
+    """Serves the master BrainScope-XAI Phase 1 Academic Report PDF."""
+    pdf_path = os.path.abspath("BrainX-XAI_Phase1.pdf")
+    if not os.path.exists(pdf_path):
+        raise HTTPException(status_code=404, detail="Master Phase 1 Academic Report PDF not found.")
+    return FileResponse(
+        pdf_path,
+        media_type="application/pdf",
+        filename="BrainX-XAI_Phase1_Academic_Report.pdf"
+    )
+
+
 @app.get("/api/sample-images")
 def get_sample_images():
     """Provides representative test-ready sample images across all 4 disease categories."""
@@ -126,11 +139,20 @@ def get_sample_images():
             files = sorted(glob.glob(os.path.join(folder_path, "*.jpg")))[:3]
             for idx, f in enumerate(files):
                 fname = os.path.basename(f)
+                b64_thumb = ""
+                try:
+                    with open(f, "rb") as img_f:
+                        import base64
+                        b64_thumb = "data:image/jpeg;base64," + base64.b64encode(img_f.read()).decode("utf-8")
+                except Exception:
+                    pass
+
                 samples.append({
                     "id": f"{folder}_{idx}",
                     "filename": fname,
                     "class_name": c_name,
-                    "path": f
+                    "path": f,
+                    "thumbnail_b64": b64_thumb
                 })
     return samples
 
@@ -250,13 +272,21 @@ def get_analysis_history():
     return history_store[:25]
 
 
-# Mount static assets for run results and comparisons
+# Mount static assets for run results, evaluations, gradcam, and comparisons
 if os.path.exists(RUNS_DIR):
     app.mount("/results/app_runs", StaticFiles(directory=RUNS_DIR), name="app_runs")
 
 comparison_dir = os.path.abspath(os.path.join("results", "comparison"))
 if os.path.exists(comparison_dir):
     app.mount("/results/comparison", StaticFiles(directory=comparison_dir), name="comparison")
+
+eval_dir = os.path.abspath(os.path.join("results", "evaluation"))
+if os.path.exists(eval_dir):
+    app.mount("/results/evaluation", StaticFiles(directory=eval_dir), name="evaluation")
+
+gradcam_dir = os.path.abspath(os.path.join("results", "gradcam"))
+if os.path.exists(gradcam_dir):
+    app.mount("/results/gradcam", StaticFiles(directory=gradcam_dir), name="gradcam")
 
 # Mount frontend directory
 frontend_dir = os.path.abspath("frontend")

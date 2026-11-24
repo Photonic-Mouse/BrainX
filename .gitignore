@@ -15,6 +15,7 @@ __pycache__/
 results/app_runs/
 results/app_runs/*
 !results/app_runs/.gitkeep
+results/pdf_preview/
 
 # Checkpoint backups
 checkpoints/backup/
