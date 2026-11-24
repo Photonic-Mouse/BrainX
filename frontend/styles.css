@@ -12,12 +12,13 @@
   --bg-surface-subtle: #F1F5F9;
   --bg-surface-hover: #E2E8F0;
   
-  /* Sidebar Navy */
-  --bg-sidebar: #0F172A;
-  --bg-sidebar-card: #1E293B;
-  --bg-sidebar-hover: #334155;
-  --text-sidebar-primary: #F8FAFC;
-  --text-sidebar-muted: #94A3B8;
+  /* Full Light Theme Sidebar */
+  --bg-sidebar: #FFFFFF;
+  --bg-sidebar-card: #F8FAFC;
+  --bg-sidebar-hover: #F1F5F9;
+  --text-sidebar-primary: #0F172A;
+  --text-sidebar-muted: #64748B;
+  --border-sidebar: #E2E8F0;
 
   /* Typography Colors */
   --text-primary: #0F172A;
@@ -131,9 +132,15 @@ button, input, select {
 }
 
 .brand-icon {
-  width: 34px;
-  height: 34px;
-  color: #38BDF8;
+  width: 36px;
+  height: 36px;
+  color: var(--action-blue);
+  flex-shrink: 0;
+}
+
+.brand-custom-svg {
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
 }
 
@@ -141,7 +148,7 @@ button, input, select {
   font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
-  color: var(--text-inverse);
+  color: var(--text-primary);
   line-height: 1.2;
 }
 
@@ -150,7 +157,7 @@ button, input, select {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-sidebar-muted);
+  color: var(--text-muted);
 }
 
 /* Sidebar Navigation */
@@ -165,9 +172,9 @@ button, input, select {
 
 .nav-group-label {
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
-  color: var(--text-sidebar-muted);
+  color: #94A3B8;
   padding: 0.75rem 0.75rem 0.35rem;
 }
 
@@ -177,7 +184,7 @@ button, input, select {
   gap: 0.75rem;
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius-md);
-  color: var(--text-sidebar-muted);
+  color: var(--text-secondary);
   background: transparent;
   border: 2px solid transparent;
   cursor: pointer;
@@ -192,17 +199,27 @@ button, input, select {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  color: var(--text-secondary);
 }
 
 .nav-item:hover {
-  background-color: var(--bg-sidebar-hover);
-  color: var(--text-inverse);
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
+}
+
+.nav-item:hover i {
+  color: var(--action-blue);
 }
 
 .nav-item.active {
-  background-color: var(--bg-sidebar-card);
-  color: var(--text-inverse);
-  border-color: #38BDF8;
+  background-color: var(--surface-blue);
+  color: var(--action-blue);
+  border-color: #2563EB;
+  font-weight: 700;
+}
+
+.nav-item.active i {
+  color: var(--action-blue);
 }
 
 .nav-badge {
@@ -211,34 +228,37 @@ button, input, select {
   font-weight: 700;
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-sm);
-  background-color: var(--bg-sidebar-hover);
-  color: #38BDF8;
+  background-color: var(--bg-surface-subtle);
+  border: 1px solid var(--border-dark);
+  color: var(--text-secondary);
   font-family: var(--font-mono);
 }
 
 .nav-badge.live-pulse {
-  background-color: var(--action-blue);
-  color: #FFFFFF;
+  background-color: var(--surface-blue);
+  border-color: var(--border-blue);
+  color: var(--action-blue);
 }
 
 .nav-badge.metric-pill {
-  background-color: var(--success-emerald);
-  color: #FFFFFF;
+  background-color: var(--surface-emerald);
+  border-color: var(--border-emerald);
+  color: var(--success-emerald);
 }
 
 /* Sidebar Footer / Telemetry */
 .sidebar-footer {
   padding: 1rem 1rem;
   border-top: 2px solid var(--border-sidebar);
-  background-color: #090E1D;
+  background-color: var(--bg-surface-subtle);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
 .telemetry-box {
-  background-color: var(--bg-sidebar-card);
-  border: 1px solid var(--border-sidebar);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 0.65rem 0.8rem;
   display: flex;
@@ -254,14 +274,14 @@ button, input, select {
 }
 
 .telemetry-label {
-  color: var(--text-sidebar-muted);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .telemetry-val {
   font-family: var(--font-mono);
   font-weight: 700;
-  color: #38BDF8;
+  color: var(--action-blue);
 }
 
 .btn-sidebar-download {
@@ -271,7 +291,7 @@ button, input, select {
   gap: 0.5rem;
   background-color: var(--action-blue);
   color: #FFFFFF;
-  border: 2px solid #2563EB;
+  border: 2px solid #1E40AF;
   border-radius: var(--radius-md);
   padding: 0.6rem 0.75rem;
   font-size: 0.8rem;
@@ -819,8 +839,7 @@ button, input, select {
   border-radius: var(--radius-md);
   padding: 0.4rem 0.65rem;
   font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
@@ -828,20 +847,70 @@ button, input, select {
   gap: 0.35rem;
 }
 
-.sample-chip:hover {
-  border-color: var(--action-blue);
-  background-color: var(--surface-blue);
+.sample-chip.chip-mild {
+  background-color: #FEF3C7;
+  border-color: #F59E0B;
+  color: #92400E;
+}
+.sample-chip.chip-mild:hover, .sample-chip.chip-mild.active {
+  background-color: #D97706;
+  border-color: #B45309;
+  color: #FFFFFF;
 }
 
-.sample-chip.active {
-  border-color: var(--action-blue);
-  background-color: var(--action-blue);
+.sample-chip.chip-moderate {
+  background-color: #FEE2E2;
+  border-color: #EF4444;
+  color: #991B1B;
+}
+.sample-chip.chip-moderate:hover, .sample-chip.chip-moderate.active {
+  background-color: #DC2626;
+  border-color: #B91C1C;
+  color: #FFFFFF;
+}
+
+.sample-chip.chip-non {
+  background-color: #D1FAE5;
+  border-color: #10B981;
+  color: #065F46;
+}
+.sample-chip.chip-non:hover, .sample-chip.chip-non.active {
+  background-color: #059669;
+  border-color: #047857;
+  color: #FFFFFF;
+}
+
+.sample-chip.chip-verymild {
+  background-color: #E0E7FF;
+  border-color: #6366F1;
+  color: #3730A3;
+}
+.sample-chip.chip-verymild:hover, .sample-chip.chip-verymild.active {
+  background-color: #4F46E5;
+  border-color: #3730A3;
   color: #FFFFFF;
 }
 
 .sample-chip-loading {
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+.brand-custom-svg {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.mri-scanner-svg {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+.drop-zone:hover .mri-scanner-svg {
+  transform: scale(1.06);
 }
 
 .action-dock {

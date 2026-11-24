@@ -4,7 +4,7 @@ import urllib.request
 from PIL import Image
 
 diagrams = {
-    'diagram_pipeline.png': """flowchart LR
+    'pipeline': """flowchart LR
     A["Raw 2D Axial MRI<br/>128x128 Grayscale"] --> B["Bilinear Rescale<br/>224x224"]
     B --> C["3-Channel Replication<br/>R=G=B (ImageNet Norm)"]
     C --> D{"Execution Mode"}
@@ -19,7 +19,7 @@ diagrams = {
     I -.-> K
     K --> L["Visual Heatmap<br/>Ventricle and Temporal Saliency"]
 """,
-    'diagram_resnet.png': """flowchart LR
+    'resnet': """flowchart LR
     In["Input Tensor<br/>3 x 224 x 224"] --> Stem["Stem Layer<br/>Conv1 7x7 (64-ch, s2)<br/>MaxPool 3x3 (s2)"]
     Stem --> L1["Stage 1 (layer1)<br/>2x BasicBlock (64-ch)<br/>Output: 56x56x64"]
     L1 --> L2["Stage 2 (layer2)<br/>2x BasicBlock (128-ch)<br/>Output: 28x28x128"]
@@ -28,7 +28,7 @@ diagrams = {
     L4 --> GAP["Global Avg Pool<br/>Spatial 7x7 Collapse<br/>512-dim Vector"]
     GAP --> FC["Linear Head<br/>nn.Linear(512, 4)<br/>Logits: 4 Disease Classes"]
 """,
-    'diagram_gradcam.png': """flowchart LR
+    'gradcam': """flowchart LR
     Target["Target Class Logit Y_c"] -->|"Backprop Gradients"| Grads["Gradients dY_c / dA^k<br/>at model.layer4[-1]"]
     Grads -->|"Global Avg Pooling"| Weights["Neuron Weights alpha_k^c<br/>(1/UV) sum(dY_c / dA_ij^k)"]
     Act["Activations A^k (512 Maps)<br/>Forward Hook on layer4[-1]"] --> LinComb
@@ -38,7 +38,7 @@ diagrams = {
     Interp --> Norm["Min-Max Normalization<br/>[0.0, 1.0]"]
     Norm --> Heatmap["Heatmap Overlay<br/>Ventricles & Hippocampus"]
 """,
-    'diagram_7stages.png': """flowchart LR
+    '7stages': """flowchart LR
     subgraph P1 ["Phase 1: Foundations"]
         S1["Stage 1: Data Audit<br/>6,400 scans, 70/15/15 split"] --> S2["Stage 2: Reproducibility<br/>Seeds 17, 42, 2026 (95.49%)"]
     end
@@ -56,17 +56,35 @@ diagrams = {
 out_dir = os.path.join('results', 'architecture_diagrams')
 os.makedirs(out_dir, exist_ok=True)
 
-for name, code in diagrams.items():
+# 1. Generate Light version for PDF
+for key, code in diagrams.items():
     b64 = base64.b64encode(code.strip().encode('utf-8')).decode('ascii')
     url = f'https://mermaid.ink/img/{b64}?bgColor=FFFFFF'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = resp.read()
-            out_path = os.path.join(out_dir, name)
+            out_path = os.path.join(out_dir, f'diagram_{key}.png')
             with open(out_path, 'wb') as f:
                 f.write(data)
             im = Image.open(out_path)
-            print(f'Generated {name}: size={im.size}')
+            print(f'Light diagram_{key}.png: size={im.size}')
     except Exception as e:
-        print(f'Error generating {name}: {e}')
+        print(f'Error generating light {key}: {e}')
+
+# 2. Generate Dark version for PPT (App Dark Theme)
+for key, code in diagrams.items():
+    b64 = base64.b64encode(code.strip().encode('utf-8')).decode('ascii')
+    # Using dark theme with background matching --bg-card: #111827
+    url = f'https://mermaid.ink/img/{b64}?theme=dark&bgColor=111827'
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = resp.read()
+            out_path = os.path.join(out_dir, f'dark_diagram_{key}.png')
+            with open(out_path, 'wb') as f:
+                f.write(data)
+            im = Image.open(out_path)
+            print(f'Dark dark_diagram_{key}.png: size={im.size}')
+    except Exception as e:
+        print(f'Error generating dark {key}: {e}')

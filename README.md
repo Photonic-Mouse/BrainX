@@ -478,7 +478,7 @@ BRAINSCOPE-XAI/
 
 ```powershell
 # Clone the repository
-git clone https://github.com/Photonic-Mouse/BrainX.git
+git clone https://github.com/sharancode3/BrainScope-XAI.git
 cd BrainX
 
 # Create and activate virtual environment

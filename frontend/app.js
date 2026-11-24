@@ -220,14 +220,22 @@ async function fetchSampleCohort() {
       const count = classCounters[cName];
 
       let shortClass = cName.replace(" Demented", "");
-      if (shortClass === "Very Mild") shortClass = "Very Mild";
-      else if (shortClass === "Moderate") shortClass = "Moderate";
-      else if (shortClass === "Non") shortClass = "Non-Dem";
+      let chipClass = "chip-mild";
+      if (cName.includes("Moderate")) {
+        shortClass = "Moderate";
+        chipClass = "chip-moderate";
+      } else if (cName.includes("Non")) {
+        shortClass = "Non-Dem";
+        chipClass = "chip-non";
+      } else if (cName.includes("Very Mild")) {
+        shortClass = "Very Mild";
+        chipClass = "chip-verymild";
+      }
 
       const label = `${shortClass} #${count}`;
 
       const chip = document.createElement("button");
-      chip.className = "sample-chip";
+      chip.className = `sample-chip ${chipClass}`;
       chip.title = `${s.class_name} • File: ${s.filename}`;
       chip.innerHTML = `<i data-lucide="scan"></i><span>${label}</span>`;
 
