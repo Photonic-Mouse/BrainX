@@ -390,10 +390,9 @@ function renderAnalysisOutput(data) {
 
   modelKeys.forEach(k => {
     const m = data.models[k];
-    const isWinner = k === "clahe";
 
     const card = document.createElement("div");
-    card.className = `model-stat-card ${isWinner ? 'winner' : ''}`;
+    card.className = "model-stat-card";
 
     let badgeClass = CLASS_COLORS[m.predicted_class] || "badge-outline";
 
@@ -409,7 +408,7 @@ function renderAnalysisOutput(data) {
             <span class="prob-class-val">${pPct}%</span>
           </div>
           <div class="prob-track">
-            <div class="prob-fill ${isTop ? (isWinner ? 'winner-fill' : '') : ''}" style="width: ${pPct}%;"></div>
+            <div class="prob-fill" style="width: ${pPct}%;"></div>
           </div>
         </div>
       `;
@@ -418,7 +417,7 @@ function renderAnalysisOutput(data) {
     card.innerHTML = `
       <div class="m-header">
         <h4>${m.name}</h4>
-        <span class="badge ${isWinner ? 'badge-success' : 'badge-outline'}">${m.preprocessing}</span>
+        <span class="badge badge-outline">${m.preprocessing}</span>
       </div>
       <div class="m-body">
         <div class="m-pred-highlight">
