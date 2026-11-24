@@ -804,6 +804,36 @@ button, input, select {
   margin-bottom: 0.65rem;
 }
 
+.presentation-folder-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background-color: var(--surface-blue);
+  border: 1px solid var(--border-blue);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.65rem;
+  font-size: 0.73rem;
+  color: var(--action-blue);
+  margin-bottom: 0.65rem;
+}
+
+.presentation-folder-hint i {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  color: var(--action-blue);
+}
+
+.presentation-folder-hint code {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  background-color: #FFFFFF;
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  border: 1px solid var(--border-blue);
+  color: #1E40AF;
+}
+
 /* Quick Test Sample Picker */
 .sample-picker-block {
   padding: 0 1.25rem 1.25rem;
