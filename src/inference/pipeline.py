@@ -212,6 +212,12 @@ class MRIAnalysisEngine:
             # Probability mapping
             prob_dict = {CLASS_NAMES[i]: round(float(probs[i]), 4) for i in range(4)}
 
+            # Raw logits and tensor telemetry
+            logits_list = [round(float(x), 4) for x in output[0].detach().cpu().numpy().tolist()]
+            act_shape = list(gradcam.activations.shape) if gradcam.activations is not None else [1, 512, 7, 7]
+            act_l2 = round(float(torch.norm(gradcam.activations).item()), 2) if gradcam.activations is not None else 0.0
+            grad_l2 = round(float(torch.norm(gradcam.gradients).item()), 6) if gradcam.gradients is not None else 0.0
+
             model_results[key] = {
                 "id": key,
                 "name": cfg["name"],
@@ -223,6 +229,13 @@ class MRIAnalysisEngine:
                 "probabilities": prob_dict,
                 "benchmark_acc": cfg["benchmark_acc"],
                 "benchmark_macro_f1": cfg["benchmark_macro_f1"],
+                "tensor_telemetry": {
+                    "logits": logits_list,
+                    "softmax_probs": [round(float(p), 4) for p in probs],
+                    "activation_shape": act_shape,
+                    "activation_l2_norm": act_l2,
+                    "gradient_l2_norm": grad_l2
+                },
                 "visualizations": {
                     "original_b64": self.encode_image_base64(raw_224),
                     "preprocessed_b64": prep_images[key]["b64"],
@@ -288,13 +301,51 @@ class MRIAnalysisEngine:
         }
 
         elapsed_ms = (time.time() - t_start) * 1000.0
-        print(f" [PYTORCH FORWARD PASSES & GRAD-CAM BACKPROP COMPLETED IN {elapsed_ms:.1f}ms]")
+        
+        # Build comprehensive linear algebra & tensor telemetry printout
+        tensor_telemetry_lines = [
+            "=" * 78,
+            f" [PYTORCH LINEAR ALGEBRA & TENSOR TELEMETRY] Run ID: {run_id}",
+            f" Timestamp : {time.strftime('%Y-%m-%d %H:%M:%S')} UTC | Source: {filename} ({orig_w}x{orig_h})",
+            f" Hardware  : {str(self.device).upper()} ({torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU'}) | Precision: FP32",
+            f" Input     : 4D Tensor shape [1, 3, 224, 224] (Batch=1, Channels=3, Resized 224x224)",
+            "-" * 78,
+            " SOFTMAX PROBABILITY FORMULA : p_i = exp(z_i) / sum(exp(z_j))",
+            " CLASS VECTOR MAPPING        : [0: 'Mild', 1: 'Moderate', 2: 'Non Demented', 3: 'Very Mild']",
+            "-" * 78
+        ]
+
         for k in ["baseline", "he", "clahe"]:
             m = model_results[k]
-            print(f"  * {m['name']:<38} : {m['predicted_class']:<20} ({m['confidence_pct']:>6.2f}%)")
-        print(f" [CONSENSUS] {agreement_status} -> {consensus_class}")
-        print(f" [DISK AUDIT] 10 artifacts saved to: {run_dir}")
-        print("=" * 76 + "\n")
+            tel = m["tensor_telemetry"]
+            tensor_telemetry_lines.extend([
+                f" ARCHITECTURE: {m['name']} ({m['preprocessing']})",
+                f"   * Raw Logit Vector z (Linear FC) : {tel['logits']}",
+                f"   * Softmax Probability Vector p   : {tel['softmax_probs']} -> {m['predicted_class']} ({m['confidence_pct']:>6.2f}%)",
+                f"   * Layer-4 Conv Bottleneck Tensor : Shape {tel['activation_shape']} | L2-Norm = {tel['activation_l2_norm']}",
+                f"   * Grad-CAM Gradient Norm         : ||dY/dA||_2 = {tel['gradient_l2_norm']}",
+                ""
+            ])
+
+        tensor_telemetry_lines.extend([
+            "-" * 78,
+            f" [CONSENSUS DECISION] {agreement_status} -> Diagnosis: {consensus_class}",
+            f" [COMPUTATION LATENCY] Forward passes + Grad-CAM autograd completed in {elapsed_ms:.1f}ms",
+            f" [DISK AUDIT TRAIL] 10 PNG image artifacts saved to: {run_dir}",
+            "=" * 78,
+            ""
+        ])
+
+        tensor_telemetry_str = "\n".join(tensor_telemetry_lines)
+        print(tensor_telemetry_str)
+
+        # Append to live tensor stream log file for the dedicated monitor window
+        try:
+            stream_log_path = os.path.join(RUNS_DIR, "live_tensor_stream.log")
+            with open(stream_log_path, "a", encoding="utf-8") as f:
+                f.write(tensor_telemetry_str + "\n")
+        except Exception:
+            pass
 
         now_str = time.strftime('%H:%M:%S')
         execution_trace = [
