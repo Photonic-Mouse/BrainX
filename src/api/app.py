@@ -90,7 +90,7 @@ def get_research_metrics():
             },
             {
                 "id": "clahe",
-                "name": "CLAHE ResNet18 (Top Accuracy)",
+                "name": "CLAHE ResNet18 (Adaptive Contrast)",
                 "preprocessing": "Adaptive Local Contrast (clipLimit=2.0)",
                 "accuracy": 0.9510,
                 "macro_precision": 0.9668,

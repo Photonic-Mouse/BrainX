@@ -291,9 +291,9 @@ class MRIAnalysisEngine:
         print(f" [PYTORCH FORWARD PASSES & GRAD-CAM BACKPROP COMPLETED IN {elapsed_ms:.1f}ms]")
         for k in ["baseline", "he", "clahe"]:
             m = model_results[k]
-            print(f"  * {m['name']:<36} : {m['predicted_class']:<20} ({m['confidence_pct']:>5.1f}%)")
+            print(f"  * {m['name']:<38} : {m['predicted_class']:<20} ({m['confidence_pct']:>6.2f}%)")
         print(f" [CONSENSUS] {agreement_status} -> {consensus_class}")
-        print(f" [DISK AUDIT] 9 artifacts saved to: {run_dir}")
+        print(f" [DISK AUDIT] 10 artifacts saved to: {run_dir}")
         print("=" * 76 + "\n")
 
         now_str = time.strftime('%H:%M:%S')
