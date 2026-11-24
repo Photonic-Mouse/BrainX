@@ -464,7 +464,37 @@ function renderAnalysisOutput(data) {
     tbody.appendChild(tr);
   });
 
-  // D. Populate Grad-CAM Tri-View Tab
+  // D. Populate Live PyTorch Terminal Stream (Proof 2)
+  const termBody = document.getElementById("live-terminal-body");
+  if (termBody && data.execution_trace) {
+    termBody.innerHTML = data.execution_trace.map(line => {
+      let color = "#94A3B8";
+      if (line.includes("COMPUTE TARGET") || line.includes("CUDA")) color = "#38BDF8";
+      if (line.includes("RESNET-18")) color = "#818CF8";
+      if (line.includes("GRAD-CAM")) color = "#F59E0B";
+      if (line.includes("CLINICAL CONSENSUS")) color = "#10B981";
+      if (line.includes("LATENCY")) color = "#34D399";
+      if (line.includes("DISK AUDIT")) color = "#A78BFA";
+      return `<div style="color: ${color};"><span style="color:#475569; user-select:none;">&gt; </span>${line}</div>`;
+    }).join("");
+  }
+
+  const btnTermOpenFolder = document.getElementById("btn-terminal-open-folder");
+  if (btnTermOpenFolder) {
+    btnTermOpenFolder.onclick = async () => {
+      try {
+        await fetch("/api/open-run-folder", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ run_id: data.run_id, path: data.run_dir })
+        });
+      } catch (err) {
+        console.error("Could not trigger folder open:", err);
+      }
+    };
+  }
+
+  // E. Populate Grad-CAM Tri-View Tab
   populateGradcamStudio(data);
 
   if (window.lucide) {
